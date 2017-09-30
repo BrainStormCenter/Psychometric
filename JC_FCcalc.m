@@ -1,5 +1,11 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%		CREATED BY:		JOCHEN WEBER
+%
+%		CREATED ON:		2016-11-25
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function JC_FCcalc(fcfiles, roifiles)
-%JC_FCCALC  Calculate functional connectivity maps
+%   JC_FCCALC  Calculate functional connectivity maps
 %   JC_FCCALC(FCFILES, ROIFILES) calculates the functional connectivity
 %   between the mean of each ROI mask file (averaged across voxels) and
 %   the functional connectivity files in FCFILES.
@@ -56,7 +62,7 @@ for fc = 1:numel(fcfiles)
         if isempty(fcpath)
             fcpath = pwd;
         end
-        
+
         % load file
         fcvols = spm_vol(fcfiles{fc});
         nvols = numel(fcvols);
@@ -103,7 +109,7 @@ for fc = 1:numel(fcfiles)
                 'descrip', sprintf('FC (%s:%s)', fcname, roiinfo{rc, 4})));
             spm_write_vol(rvol, rdata);
         end
-        
+
     % error handling
     catch eobj
         warning(eobj.identifier, eobj.message);
