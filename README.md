@@ -1,5 +1,14 @@
 # Psychometric
 Scripts for processing data for the psychometric grant
+The scripts are to be run in the following order:
+1. JC_preprocessing
+2. JC_normc123
+3. JC_FCprepro.m
+4. JC_FCcalc.m
+5. JC_ROIFCcalc.m
+6. JC_rext_plot.m
+
+A new script will be added in the near future that will provide information about data quality and motion correction estimates.
 
 ## JC_preprocessing
 This script uses SPM12 to perform the following steps of preprocessing on all subjects
