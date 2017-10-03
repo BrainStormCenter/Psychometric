@@ -50,7 +50,7 @@ rpfolders = {subfolders.name};
 %
 
 
-% iterate over subject folders to find the motion correction files 
+% iterate over subject folders to find the motion correction files
 %   3DMC FILES ARE TEXT FILES WITH THE PREFIX rp (e.g., rp*.txt)
 rpfiles = {subfolders.name};
 
@@ -63,8 +63,11 @@ rpfiles = cat(1, rpfiles{:});
 rpfiles = {rpfiles.name};
 
 
+%   After a day working on this, I could not work out
+%   how to get the nested loop to work properly.
+
 for fc = 1:numel(rpfiles)
-    
+
         for rc = 1:numel(rpfolders)
        %disp(rpfolders(rc));
         X = [rpfolders{rc},'/',rpfiles{fc}];
@@ -74,15 +77,15 @@ for fc = 1:numel(rpfiles)
 %           disp(rpfiles(run));
 %           rpfiles{rc} = [rpfolders{rc} '/' rpfiles{rc}];
 %           disp(rpfiles{rc});
-%      
+%
 %          %disp(rc);
 %          % disp(rpfolders(run))
-         
-    
+
+
    end
 end
 
-% %  
+% %
 
 
 rpoutliers = cell(numel(rpfiles), 1);
@@ -90,9 +93,9 @@ rpoutliers = cell(numel(rpfiles), 1);
 %  for fc = 1:numel(rpfiles)
 %      for rc = 1:numruns
 %      rpfiles{fc} = [rpfolders{fc} '/' rpfiles{fc}];
-%      
+%
 %      test = (rpfiles{fc});
-%         
+%
      %     rp = load(rpfiles{fc});
 %     rp(:, 4:6) = (180/pi) .* rp(:, 4:6);
 %     rpd = diff(rp);
