@@ -14,7 +14,8 @@
 %
 
 %       CLEAR PREVIOUS ITERATION
-clear all;
+% home;
+%   clear all;
 
 
 % folders
@@ -28,7 +29,7 @@ numruns = 4;
 dirinfo = dir([rootpath subpattern]);
 sublist = {dirinfo.name};
 
-
+cd(rootpath);
 % pick subject
 % for sc = 1:numel(subjlist)
 % %sc = 1:numel(subjlist);
@@ -66,12 +67,63 @@ rpfiles = {rpfiles.name};
 %   After a day working on this, I could not work out
 %   how to get the nested loop to work properly.
 
-for fc = 1:numel(rpfiles)
+%for fc = 1:numel(rpfiles)
+i=1;
 
-        for rc = 1:numel(rpfolders)
+while i < numel(rpfiles)
+    for rc = 1:numel(rpfolders)
+        run = 1;
+        while run < 5;
+            test1 = ([rpfolders{rc}]);
+            %disp(rpfolders{rc})
+            test2 = ([rpfiles{i}]);
+            rpfiles2{i} = [test1 filesep test2];
+%             disp(test1)
+%             disp(test2)
+            disp(rpfiles2{i})
+            rp = load(rpfiles2{i});
+            rp(:, 4:6) = (180/pi) .* rp(:, 4:6);
+            rpd = diff(rp);
+            rpoutliers{i} = 1 + find(any(abs(rpd(:, 1:3)) > transthresh, 2) | ...
+                any(abs(rpd(:, 4:6)) > rotthresh, 2));
+% 
+%          % print out information
+%             olist = sprintf('%d, ', rpoutliers{i});
+%             olist(end-1:end) = [];
+%             fprintf('%-88s: %d ([%s])\n', rpfiles{i}, numel(rpoutliers{i}), olist);
+    %            disp([rpfiles{i}])
+    
+           % X = [rpfolders{rc} '/' rpfiles{i}]
+            %disp(X)
+            i = i+1;
+            run = run + 1;
+            
+        end
+    end
+end
+   
+
+
+   
+%      for run = 1:numruns
+%          mot = [rpfolders{rc} '/' rpfiles(i)];
+%          disp(mot)
+%        %  disp(i)
+%      end
+% disp(i)
+    
+%         rpfiles{rc} = [rpfolders{rc} '/' rpfiles{run}];
+%         X = [rpfolders{rc} '/' rpfiles{run}];
+%         disp(X)
+%         %disp(rpfiles(rc));
+% %        disp(rpfiles{run})
+%     end
+    %X = rpfiles{rc};
+            
        %disp(rpfolders(rc));
-        X = [rpfolders{rc},'/',rpfiles{fc}];
-        disp(X);
+      %  X = [rpfolders{rc},'/',rpfiles{fc}];
+       
+      %disp(X);
 %       i = 268 % the number of rpfiles
        %for run = 1:4
 %           disp(rpfiles(run));
@@ -82,13 +134,13 @@ for fc = 1:numel(rpfiles)
 %          % disp(rpfolders(run))
 
 
-   end
-end
+   
+%end
 
 % %
 
 
-rpoutliers = cell(numel(rpfiles), 1);
+%rpoutliers = cell(numel(rpfiles), 1);
 
 %  for fc = 1:numel(rpfiles)
 %      for rc = 1:numruns
