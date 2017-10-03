@@ -1,5 +1,10 @@
 # To do list for the Psychometric grant
 
+
+2017_10_03
+* fix the motion correction script. There is a mismatch between subject folders and the files contained within.
+
+
 2017_10_02
 * Create/add script to extract motion correction estimates from the preprocessed data.
 * Use aforementioned script to get a reasonable estimate of how much useable date has already been collected.
