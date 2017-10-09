@@ -2,7 +2,7 @@
 % (number of) outliers as well as overall motion estimates
 
 % folders
-rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason/';
+rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/';
 subpattern = 'Sub*_v*';
 rppattern = 'rp_aRSrun*.txt';
 
@@ -26,6 +26,9 @@ for fc = 1:numel(rpfiles)
 end
 rpfiles = cat(1, rpfiles{:});
 rpfolders = cat(1, rpfolders{:});
+
+% open an output file
+file_id = fopen([rootpath 'motion_outliers.txt'], 'w');
 
 %   iterate over all files
 rpfiles = {rpfiles.name};
@@ -51,5 +54,13 @@ for fc = 1:numel(rpfiles)
 %     % print out information
     olist = sprintf('%d, ', rpoutliers{fc});
     olist(end-1:end) = [];
-    fprintf('%-32s: %d ([%s])\n', rpfiles{fc}, numel(rpoutliers{fc}), olist);
+        fprintf('%-32s: %d ([%s])\n', rpfiles{fc}, numel(rpoutliers{fc}), olist);
+    fprintf(file_id, '%-32s: %d ([%s])\n', rpfiles{fc}, numel(rpoutliers{fc}), olist);
 end
+
+% close file
+fclose(file_id);
+
+% also store as a MAT file
+save([rootpath 'motion_outliers.mat'], 'rpfiles', 'rpoutliers');
+
