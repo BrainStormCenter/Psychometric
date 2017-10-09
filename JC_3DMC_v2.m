@@ -74,7 +74,8 @@ maxFwMot = cell(numel(rpfiles), 1);
 file_id1 = fopen([rootpath 'motion_outLiers.txt'], 'w');
 file_id2 = fopen([rootpath 'max_Motion.txt'], 'w');
 file_id3 = fopen([rootpath 'maxFw_Motion.txt'], 'w');
-file_id4 = fopen([rootpath 'Fw_Motion.txt'], 'w');
+file_id4 = fopen([rootpath 'Motion_estimates.txt'], 'w');
+formatSpec = '(maxMot) %.2f %.2f %.2f %.2f %.2f %.2f, (maxFW) %.2f %.2f %.2f %.2f %.2f %.2f \n';
 
 %   iterate over all files
 for fc = 1:numel(rpfiles)
@@ -108,10 +109,11 @@ for fc = 1:numel(rpfiles)
     fprintf(file_id1,'%-32s: %d ([%s])\n', rpfiles{fc}, numel(rpoutliers{fc}), olist);
     fprintf(file_id2,'%-32s(maxMot): %.2f %.2f %.2f %.2f %.2f %.2f \n', rpfiles{fc}, rpMax{fc});
     fprintf(file_id3,'%-32s(maxFwMot): %.2f %.2f %.2f %.2f %.2f %.2f \n', rpfiles{fc}, maxFwMot{fc});
+    fprintf(file_id4,formatSpec,rpMax{fc},maxFwMot{fc});
         
 end
 
-fprintf(file_id4,'%.4f %.4f %.4f %.4f %.4f %.4f \n', rpd);
+%fprintf(file_id4,'%.4f %.4f %.4f %.4f %.4f %.4f \n', rpd);
 
 %   close file
 fclose(file_id1);
