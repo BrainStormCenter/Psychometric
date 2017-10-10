@@ -39,12 +39,12 @@
 
 
 %       configure root path and subject pattern, as well as file patterns
-
-rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/';
+rootpath = '/Volumes/Data/Imaging/R01/preprocessed/';
+% rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason/';
 subpattern = 'Sub*_v*';
 rppattern = 'rp_aRSrun*.txt';
 
-% get subjects folders
+%       CHANGE DIRECTORY AND GET SUBJECT FOLDERS
 cd(rootpath);
 subfolders = dir(subpattern);
 subfolders(~cat(1, subfolders.isdir)) = [];
@@ -76,7 +76,7 @@ file_id1 = fopen([rootpath 'motion_outLiers.txt'], 'w');
 file_id2 = fopen([rootpath 'max_Motion.txt'], 'w');
 file_id3 = fopen([rootpath 'maxFw_Motion.txt'], 'w');
 file_id4 = fopen([rootpath 'Motion_estimates.txt'], 'w');
-formatSpec = '%-32s: (maxMot) %.2f %.2f %.2f %.2f %.2f %.2f (maxFW) %.2f %.2f %.2f %.2f %.2f %.2f \n';
+formatSpec = '%-32s: (maxMot) %.4f %.4f %.4f %.4f %.4f %.4f (maxFW) %.4f %.4f %.4f %.4f %.4f %.4f \n';
 
 %   iterate over all files
 for fc = 1:numel(rpfiles)
@@ -106,10 +106,13 @@ for fc = 1:numel(rpfiles)
     olist = sprintf('%d, ', rpoutliers{fc});
     olist(end-1:end) = [];
     
+    %   PRINT TO SCREEN
     fprintf('%-32s: %d ([%s])\n', rpfiles{fc}, numel(rpoutliers{fc}), olist);
+    
+    %   WRITE TO FILES
     fprintf(file_id1,'%-32s: %d ([%s])\n', rpfiles{fc}, numel(rpoutliers{fc}), olist);
-    fprintf(file_id2,'%-32s(maxMot): %.2f %.2f %.2f %.2f %.2f %.2f \n', rpfiles{fc}, rpMax{fc});
-    fprintf(file_id3,'%-32s(maxFwMot): %.2f %.2f %.2f %.2f %.2f %.2f \n', rpfiles{fc}, maxFwMot{fc});
+    fprintf(file_id2,'%-32s(maxMot): %.4f %.4f %.4f %.4f %.4f %.4f \n', rpfiles{fc}, rpMax{fc});
+    fprintf(file_id3,'%-32s(maxFwMot): %.4f %.4f %.4f %.4f %.4f %.4f \n', rpfiles{fc}, maxFwMot{fc});
     fprintf(file_id4,formatSpec,rpfiles{fc},rpMax{fc},maxFwMot{fc});
         
 end
