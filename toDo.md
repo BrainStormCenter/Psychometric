@@ -1,6 +1,9 @@
 # To do list for the Psychometric grant
 
 
+2017_10_10
+* Create a shell script for converting the raw dicom files to the nifti format.
+
 2017_10_03
 * fix the motion correction script. There is a mismatch between subject folders and the files contained within.
 
