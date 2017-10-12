@@ -1,8 +1,12 @@
 # To do list for the Psychometric grant
 
 
+2017_10_12
+* Create a list of ROIs in various networks for upcoming analyses
+
+
 2017_10_10
-* Create a shell script for converting the raw dicom files to the nifti format.
+* Create a shell script for converting the raw dicom files to the nifti format. - COMPLETED 2017_10_11
 
 2017_10_03
 * fix the motion correction script. There is a mismatch between subject folders and the files contained within.
