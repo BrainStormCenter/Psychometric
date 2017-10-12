@@ -12,6 +12,7 @@
 %		MODIFIED ON:	2017_10_05
 %       MODIFIED ON:    2017_10_07
 %       MODIFIED ON:    2017_10_09
+%       MODIFIED ON:    2017_10_12
 %
 %%       DETAILS OF WHAT THE SCRIPT DOES
 %       SPECIFY LIBRARIES TO BE USED - IS THIS NECESSARY (?)
@@ -71,7 +72,7 @@ rpoutliers = cell(numel(rpfiles), 1);
 rpMax = cell(numel(rpfiles), 1);
 maxFwMot = cell(numel(rpfiles), 1);
 
-%   open an output files
+%   INITIALIZE OUTPUT FILES
 file_id1 = fopen([rootpath 'motion_outLiers.txt'], 'w');
 file_id2 = fopen([rootpath 'max_Motion.txt'], 'w');
 file_id3 = fopen([rootpath 'maxFw_Motion.txt'], 'w');
@@ -80,24 +81,24 @@ formatSpec = '%-32s: (maxMot) %.4f %.4f %.4f %.4f %.4f %.4f (maxFW) %.4f %.4f %.
 
 %   iterate over all files
 for fc = 1:numel(rpfiles)
-    
+
     %   generate filename with path
     rpfiles{fc} = [rpfolders{fc} '/' rpfiles{fc}];
-    
+
     %   load RP file (into variable rp)
     rp = load(rpfiles{fc});
-    
+
      %  convert radian into degrees (multiplying columns 4:6 with 180/pi)
     rp(:, 4:6) = (180/pi) .* rp(:, 4:6);
-    
+
     %   compute frame-wise (volume-to-volume) displacement
     rpd = diff(rp);
-    
+
     %   compute additional motion indicies
     %   *   MAX MOTION & MAX FRAMEWISE
     rpMax{fc} = (max(rp));
     maxFwMot{fc} = (max(rpd));
-    
+
     %   find outliers (1+ as it is the first derivative) > thresholds
     rpoutliers{fc} = 1 + find(any(abs(rpd(:, 1:3)) > transthresh, 2) | ...
         any(abs(rpd(:, 4:6)) > rotthresh, 2));
@@ -105,16 +106,16 @@ for fc = 1:numel(rpfiles)
     %   print out information
     olist = sprintf('%d, ', rpoutliers{fc});
     olist(end-1:end) = [];
-    
+
     %   PRINT TO SCREEN
     fprintf('%-32s: %d ([%s])\n', rpfiles{fc}, numel(rpoutliers{fc}), olist);
-    
+
     %   WRITE TO FILES
     fprintf(file_id1,'%-32s: %d ([%s])\n', rpfiles{fc}, numel(rpoutliers{fc}), olist);
     fprintf(file_id2,'%-32s(maxMot): %.4f %.4f %.4f %.4f %.4f %.4f \n', rpfiles{fc}, rpMax{fc});
     fprintf(file_id3,'%-32s(maxFwMot): %.4f %.4f %.4f %.4f %.4f %.4f \n', rpfiles{fc}, maxFwMot{fc});
     fprintf(file_id4,formatSpec,rpfiles{fc},rpMax{fc},maxFwMot{fc});
-        
+
 end
 
 %   CLOSE OUTPUT FILES
