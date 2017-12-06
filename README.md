@@ -1,16 +1,23 @@
 # Psychometric
 Scripts for processing data for the psychometric grant
 The scripts are to be run in the following order:
-1. JC_preprocessing
-2. JC_normc123
-3. JC_FCprepro.m
-4. JC_FCcalc.m
-5. JC_ROIFCcalc.m
-6. JC_rext_plot.m
+1. convertDicom
+2. JC_preprocessing
+3. JC_3DMC.m
+-- 3. JC_normc123 -- THESE COMMANDS ARE IN JC_preprocessing
+4. JC_FCprepro.m
+5. JC_FCcalc.m
+6. JC_ROIFCcalc.m
+7. JC_rext_plot.m
 
 A new script will be added in the near future that will provide information about data quality and motion correction estimates.
 
-## JC_preprocessing
+##    convertDicom (script 1)
+This is a shell script that calls dcm2niix to convert the raw dicom data to
+from the scanner to nii files, which are used by all of the scripts below.
+
+
+##    JC_preprocessing (script 2)
 This script uses SPM12 to perform the following steps of preprocessing on all subjects
 
 * if functional data doesn't have 42 slices, the subject will be skipped
@@ -28,3 +35,6 @@ This script uses SPM12 to perform the following steps of preprocessing on all su
 * next, the functional mean image is coregistered to the skull-stripped T1 file (still in subject space!), pulling along the functional data
 * then the functional data is normalized to MNI/ICBM space with a 3mm isotropic resolution
 * and finally, the normalized functional data is smoothed using a 6mm FWHM Gaussian kernel
+
+##    JC_3DMC.m (script 3)
+USAGE:  This script gathers information about the motion correction estimates and then writes out the results to files.
