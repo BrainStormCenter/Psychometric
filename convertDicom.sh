@@ -10,12 +10,18 @@
 #		USAGE:			CONVERT RAW DCM FILES TO NII FORMAT
 #
 #		MODIFIED ON:		2017_10_19
+#  	MODIFIED ON:	  2017_12_06
 #
 ###############################
 #
 #
 #dicomData=/Volumes/Data/Imaging/Pilot_Saline/Craggs_pilot_saline/1.3.12.2.1107.5.2.32.35338.30000017100413592759300000001/
 #niixOutput=/Volumes/Data/Imaging/ConnTest2/Pilot_Saline/
+
+#       AS OF December 6, 2017 - THIS SCRIPT HAS TO BE UPDATED FOR EACH INDIVIDUAL
+#       DATASET THAT IS CONVERTED. THIS WILL HAVE TO BE UPDATED FOR USE ON THE
+#       CLUSTER 
+
 
 sub="Sub031"
 visit="_v1"
