@@ -3,12 +3,18 @@
 %%
 %       CREATED BY:     JOCHEN WEBER
 %       CREATED ON:     11/22/16
-%       MODIFIED BY:	JASON CRAGGS
-%		MODIFIED ON:	2017_09_20
-%       
+%
+%       MODIFIED BY:    JASON CRAGGS
+%       MODIFIED ON:    2017_09_20
+%       MODIFIED ON:	  2017_12_06
+%
 %       USAGE:          PREPROCESS JASON'S R01 DATA
 %       MODIFIED TO:    JASON IS PREPROCESSING ADDITIONAL SUBJECTS
 %                       WHICH REQUIRES THAT THEY BE IN A DIFFERENT FOLDER
+%
+%       2017_12_06
+%       TESTING THE ORDER THE SCRIPTS SHOULD BE RUN
+%       THIS IS THE FIRST ONE
 %%
 
 if ~strcmpi(spm('ver'), 'spm12')
@@ -25,7 +31,8 @@ clear matlabbatch;
 % configure root path and subject pattern, as well as file patterns
 %rootpath = '/cluster/folder/craggs/study/preprocessed/';
 %rootpath = '/Volumes/Data/Imaging/R01/preprocessed/';
-rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason/';
+%rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason/';
+rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/';
 subpattern = 'Sub*_v*';
 anatpattern = 'T1_*.nii';
 funcpattern = 'RSrun*.nii';
@@ -43,7 +50,7 @@ else
     sliceorder = [2:2:nslices, 1:2:nslices];
 end
 refslice = sliceorder(1);
- 
+
 % reslice voxel size and bounding box
 wvox = 2;
 wbbox = [-78, -112, -70; 78, 76, 85];
@@ -60,7 +67,7 @@ subjlist = {dirinfo.name};
 
 % pick subject according to job number
 for sc = 1:numel(subjlist)
-    
+
     % set primary path
     primary_path = [rootpath subjlist{sc} filesep];
     cd(primary_path);
@@ -70,7 +77,7 @@ for sc = 1:numel(subjlist)
     if ~isempty(gzipfiles)
         system('gzip -d *.gz');
     end
-    
+
     % locate files
     anatfile = dir([primary_path anatpattern]);
     funcfiles = dir([primary_path funcpattern]);
@@ -91,7 +98,7 @@ for sc = 1:numel(subjlist)
             'Number of slices mismatch for %s.', subjlist{sc});
         continue;
     end
-    
+
     % change filetype of functional data to float32 (reduce precision loss)
     for fc = 1:numruns
         vol = spm_vol(funcfiles(fc).name);
@@ -119,8 +126,8 @@ for sc = 1:numel(subjlist)
     matlabbatch{1}.spm.spatial.smooth.prefix = 's';
     fprintf('Smoothing %s in %s...\n', anatfile.name, subjlist{sc});
     spm_jobman('run', matlabbatch);
-    clear matlabbatch;   
-    
+    clear matlabbatch;
+
     % coregister smoothed struct to old T1 template
     sanat = [primary_path 's' anatfile.name];
     matlabbatch{1}.spm.spatial.coreg.estimate.ref = {[spm12path '/toolbox/OldNorm/T1.nii,1']};
@@ -135,7 +142,7 @@ for sc = 1:numel(subjlist)
     spm_jobman('run', matlabbatch);
     clear matlabbatch;
     delete(sanat);
-    
+
     % segment the structural
     DefField = [primary_path 'y_' anatfile.name];
     manat = [primary_path 'm' anatfile.name];
@@ -162,8 +169,8 @@ for sc = 1:numel(subjlist)
         spm_jobman('run', matlabbatch);
     end
     clear matlabbatch;
-    
-    % normalize the segmented structural to T1 template  
+
+    % normalize the segmented structural to T1 template
     matlabbatch{1}.spm.spatial.normalise.write.subj.def = {DefField};
     matlabbatch{1}.spm.spatial.normalise.write.subj.resample = {manat};
     matlabbatch{1}.spm.spatial.normalise.write.woptions.bb = ...
@@ -174,13 +181,13 @@ for sc = 1:numel(subjlist)
     fprintf('Warping anatomical %s in %s to MNI space...\n', anatfile.name, subjlist{sc});
     spm_jobman('run', matlabbatch);
     clear matlabbatch;
-    
+
     % skull strip the segmented structural
     c1 = [primary_path 'c1' anatfile.name];
     c2 = [primary_path 'c2' anatfile.name];
     c3 = [primary_path 'c3' anatfile.name];
     sx = ['xm' anatfile.name];
-    matlabbatch{1}.spm.util.imcalc.input = {manat; c1; c2; c3};                                      
+    matlabbatch{1}.spm.util.imcalc.input = {manat; c1; c2; c3};
     matlabbatch{1}.spm.util.imcalc.output = sx;
     matlabbatch{1}.spm.util.imcalc.outdir = {''};
     matlabbatch{1}.spm.util.imcalc.expression = 'i1.*((i2+i3+i4)>=.5)';
@@ -192,7 +199,7 @@ for sc = 1:numel(subjlist)
     fprintf('Skull stripping m%s in %s...\n', anatfile.name, subjlist{sc});
     spm_jobman('run', matlabbatch);
     clear matlabbatch;
-    
+
     % generate func file names
     funcfiles = {funcfiles.name};
     meanfuncfile = sprintf('%smeana%s,1', primary_path, funcfiles{1});
@@ -209,7 +216,7 @@ for sc = 1:numel(subjlist)
             wafuncfiles{fc}{vc} = sprintf('%swa%s,%d', primary_path, wafuncfiles{fc}{vc}, vc);
         end
     end
-    
+
     % slice-timing of functional data
     matlabbatch{1}.spm.temporal.st.scans = funcfiles;
     matlabbatch{1}.spm.temporal.st.nslices = nslices;
@@ -221,7 +228,7 @@ for sc = 1:numel(subjlist)
     fprintf('Slice-time correcting data in %s...\n', subjlist{sc});
     spm_jobman('run', matlabbatch);
     clear matlabbatch;
-    
+
     % motion correction/realignment (+ mean image)
     matlabbatch{1}.spm.spatial.realign.estwrite.data = afuncfiles;
     matlabbatch{1}.spm.spatial.realign.estwrite.eoptions = struct( ...
@@ -231,7 +238,7 @@ for sc = 1:numel(subjlist)
     fprintf('Realignment of data in %s...\n', subjlist{sc});
     spm_jobman('run', matlabbatch);
     clear matlabbatch;
-    
+
     % smooth mean functional (for first step of coreg)
     matlabbatch{1}.spm.spatial.smooth.data = {meanfuncfile};
     matlabbatch{1}.spm.spatial.smooth.fwhm = [12, 12, 12];
@@ -241,10 +248,10 @@ for sc = 1:numel(subjlist)
     fprintf('Smoothing %s in %s (for coreg)...\n', meanfuncfile, subjlist{sc});
     spm_jobman('run', matlabbatch);
     clear matlabbatch;
-    
+
     % coregister funcs to EPI template
     matlabbatch{1}.spm.spatial.coreg.estimate.ref = ...
-        {[spm12path filesep 'toolbox' filesep 'OldNorm' filesep 'EPI.nii,1']}; 
+        {[spm12path filesep 'toolbox' filesep 'OldNorm' filesep 'EPI.nii,1']};
     matlabbatch{1}.spm.spatial.coreg.estimate.source = {smeanfuncfile};
     matlabbatch{1}.spm.spatial.coreg.estimate.other = [{meanfuncfile}; cat(1, afuncfiles{:})];
     matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.cost_fun = 'nmi';
@@ -255,9 +262,9 @@ for sc = 1:numel(subjlist)
     fprintf('Coregistering smoothed mean-func in %s to EPI template...\n', subjlist{sc});
     spm_jobman('run', matlabbatch);
     clear matlabbatch;
-    
+
     % coregister funcs to T1
-    matlabbatch{1}.spm.spatial.coreg.estimate.ref = {[primary_path sx]}; 
+    matlabbatch{1}.spm.spatial.coreg.estimate.ref = {[primary_path sx]};
     matlabbatch{1}.spm.spatial.coreg.estimate.source = {meanfuncfile};
     matlabbatch{1}.spm.spatial.coreg.estimate.other = cat(1, afuncfiles{:});
     matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.cost_fun = 'nmi';
@@ -268,7 +275,7 @@ for sc = 1:numel(subjlist)
     fprintf('Coregistering mean-func in %s to skull-stripped anatomical...\n', subjlist{sc});
     spm_jobman('run', matlabbatch);
     clear matlabbatch;
-    
+
     % MNI-normalize EPI data
     matlabbatch{1}.spm.spatial.normalise.write.subj.def = {DefField};
     matlabbatch{1}.spm.spatial.normalise.write.subj.resample = cat(1, afuncfiles{:});
@@ -277,9 +284,9 @@ for sc = 1:numel(subjlist)
     matlabbatch{1}.spm.spatial.normalise.write.woptions.interp = 4;
     matlabbatch{1}.spm.spatial.normalise.write.woptions.prefix = 'w';
     fprintf('MNI-warping EPI data in %s using %gmm voxel size...\n', subjlist{sc}, wvox);
-    spm_jobman('run', matlabbatch);    
+    spm_jobman('run', matlabbatch);
     clear matlabbatch
-    
+
     % smooth EPI data
     matlabbatch{1}.spm.spatial.smooth.data = cat(1, wafuncfiles{:});
     matlabbatch{1}.spm.spatial.smooth.fwhm = repmat(epismk, 1, 3);
