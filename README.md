@@ -4,7 +4,7 @@ The scripts are to be run in the following order:
 1. convertDicom
 2. JC_preprocessing
 3. JC_3DMC.m
--- 3. JC_normc123 -- THESE COMMANDS ARE IN JC_preprocessing
+* JC_normc123 -- THESE COMMANDS ARE IN JC_preprocessing
 4. JC_FCprepro.m
 5. JC_FCcalc.m
 6. JC_ROIFCcalc.m
