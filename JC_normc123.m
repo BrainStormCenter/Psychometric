@@ -4,11 +4,14 @@
 %       CREATED BY:     JOCHEN WEBER
 %       CREATED ON:     11/22/16
 %       MODIFIED BY:	JASON CRAGGS
-%		MODIFIED ON:	2017_09_27
-%       
+%       MODIFIED ON:	2017_09_27
+%       MODIFIED ON:	  2017_12_07
+%
 %       USAGE:          PREPROCESS JASON'S R01 DATA
 %       MODIFIED TO:    JASON IS PREPROCESSING ADDITIONAL SUBJECTS
 %                       WHICH REQUIRES THAT THEY BE IN A DIFFERENT FOLDER
+%
+%       December 7, 2017: TESTING WHAT THIS SCRIPT ACTUALLY DOES
 %%
 
 if ~strcmpi(spm('ver'), 'spm12')
@@ -25,7 +28,8 @@ clear matlabbatch;
 % configure root path and subject pattern, as well as file patterns
 %rootpath = '/cluster/folder/craggs/study/preprocessed/';
 %rootpath = '/Volumes/Data/Imaging/R01/preprocessed/';
-rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason/';
+%rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason/';
+rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/';
 subpattern = 'Sub*_v*';
 
 % get subjects
@@ -34,7 +38,7 @@ subjlist = {dirinfo.name};
 
 % iterate over subjects
 for sc = 1:numel(subjlist)
-    
+
     % find warpfield
     cd([rootpath filesep subjlist{sc}]);
     deffield = dir('y_*.nii');
@@ -43,7 +47,7 @@ for sc = 1:numel(subjlist)
         continue;
     end
     deffield = [pwd filesep deffield.name];
-    
+
     % find c1/c2/c3 files
     c123 = [dir('c1T*.nii'); dir('c2T*.nii'); dir('c3T*.nii')];
     if numel(c123) ~= 3
@@ -53,7 +57,7 @@ for sc = 1:numel(subjlist)
     for c = 1:3
         c123{c} = [pwd filesep c123{c} ',1'];
     end
-    
+
     % resample job
     matlabbatch{1}.spm.spatial.normalise.write.subj.def = {deffield};
     matlabbatch{1}.spm.spatial.normalise.write.subj.resample = c123(:);
