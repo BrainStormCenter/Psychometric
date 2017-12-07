@@ -19,13 +19,18 @@ function JC_FCprepro(ppfile, rpfile, trfilt, gsfiles)
 
 
 %%
-% THESE COMMANDS WORKED FOR A SINGLE SUBJECT
+%       December 7, 2017
+%       TESTING THE SCRIPT
+% THESE COMMANDS WORKED FOR A SINGLE SUBJECT ?
 %rpfiles = n.findfiles([pwd '/Sub*'], 'rp*.txt', '-d1');
 % wc1 = n.findfiles([pwd '/Sub*'], 'wc1*.nii', '-d1');
 % wc2 = n.findfiles([pwd '/Sub*'], 'wc2*.nii', '-d1');
 % wc3 = n.findfiles([pwd '/Sub*'], 'wc3*.nii', '-d1');
 %
 %JC_FCprepro(swa,rpfiles,120/2.8, [wc1; wc2; wc3])
+%
+%
+%
 %%
 
 % requires CHAR or CELL input
