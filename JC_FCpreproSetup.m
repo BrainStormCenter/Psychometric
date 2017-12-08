@@ -2,26 +2,29 @@
 %
 %
 %		CREATED BY:		JASON CRAGGS
-%
 %		CREATED ON:		2017-12-07
-%
 %
 %		USAGE:			PREPARING THE FUNCTIONAL DATASETS FOR THE
 %                       FUNCTIONAL CONNECTIVITY ANALYSES
 %
+% 	MODIFIED ON:	  2017_12_08
 %
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %
 %
-%           SETUP FOR A SINGLE SUBJECT - RUN FROM THEIR FOLDER
+%           SETUP FOR A SINGLE SUBJECT
+%           THIS MUST BE RUN FROM THEIR FOLDER
+%
 %           rpfiles = rp-*.txt files = motion parameters
 %                     Columns 1-3 are X/Y/Z movement in mm.
 %                     Columns 4-6 are rotation around X/Y/Z in radians.
-%           wc* = TISSUE CLASSES FROM THE STRUCTURAL DATA.
+%           wc* = TISSUE CLASSES FROM THE STRUCTURAL DATA
 %                   c1/c2/c3 images are the first three "tissue classes"
-%                   (GM/WM/CSF) from the segmentation (normalization estimation)
+%                   (GM/WM/CSF) from the segmentation
+%                   r = realigned
+%                   w = normalized
 %           swa = THE FUNCTIONAL DATA FROM EACH RUN
 %                   a = slice time corrected
 %                   s = smoothed
