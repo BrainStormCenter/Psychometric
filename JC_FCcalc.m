@@ -46,8 +46,8 @@ for fc = 1:numel(roifiles)
     roiinfo{fc, 3} = roivoi.mat;
     [roipath, roiinfo{fc, 4}] = fileparts(roifiles{fc});
 end
-if fc > 1 && (any(any(diff(cat(3, roiinfo{:, 2}), 1, 3), 1), 2) || ...
-    any(any(diff(cat(3, roiinfo{:, 3}), 1, 3), 1), 2))
+if fc > 1 && (any(any(diff(cat(3, roiinfo{:, 2}), 1, 3), 3), 2) || ...
+    any(any(any(diff(cat(3, roiinfo{:, 3}), 1, 3), 1), 2)))
     error('JCfunc:calc:invalidArgument', 'ROI files must match in space.');
 end
 
