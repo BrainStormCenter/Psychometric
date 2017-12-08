@@ -12,8 +12,6 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%
-%
 %           SETUP FOR A SINGLE SUBJECT
 %           THIS MUST BE RUN FROM THEIR FOLDER
 %
@@ -29,6 +27,11 @@
 %                   a = slice time corrected
 %                   s = smoothed
 %                   w = normalized
+%
+%              OUTPUT FILES
+%                   The function will make a copy of (each of) the input file(s)
+%                   with a prefix of "fc" (e.g. "fcswraRUN.nii").
+%
 n = neuroelf;
 rpfiles = n.findfiles([pwd], 'rp*.txt', '-d1');
 wc1 = n.findfiles([pwd], 'wc1*.nii', '-d1');
