@@ -6,8 +6,9 @@
 %		CREATED ON:		2017-12-07
 %
 %
-%		USAGE:			CALCULATING THE FUNCTIONAL DATASETS FOR THE
-%                       FUNCTIONAL CONNECTIVITY ANALYSES
+%		USAGE:			SETUP FOR THE JC_FCcalc SCRIPT
+%               IDENTIFIES THE FUNCTIONAL AND ROI FILES AND PASSES THEM OFF
+%               FOR THE FUNCTIONAL CONNECTIVITY ANALYSES
 %
 %
 %
@@ -19,14 +20,20 @@
 
 n = neuroelf;
 %fcswa = n.findfiles([pwd '/Sub*'], 'fcsw*.nii', '-d1')
-fcswa = n.findfiles([pwd], 'fcsw*.nii', '-d1')
+fcswa = n.findfiles([pwd], 'fcsw*.nii', '-d1');
+hs = n.findfiles(pwd, 'r0*.nii', '-d1');
 
-% rpfiles = n.findfiles([pwd], 'rp*.txt', '-d1');
-% wc1 = n.findfiles([pwd], 'wc1*.nii', '-d1');
-% wc2 = n.findfiles([pwd], 'wc2*.nii', '-d1');
-% wc3 = n.findfiles([pwd], 'wc3*.nii', '-d1');
-% swa = n.findfiles([pwd], 'sw*.nii', '-d1');
+%         JOCHEN EXAMPLE FROM MATLAB HISTORY
+% fcswa = n.findfiles([pwd '/Sub*'], 'fcsw*.nii', '-d1')
+% hs = n.findfiles(pwd, 'r*.nii', '-d1');
+
+
+
+
+
+JC_FCcalc(fcswa, hs)
 %
-
-
-%JC_FCcalc(fcswa, hs)
+%
+%
+%
+%
