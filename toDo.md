@@ -1,5 +1,10 @@
 # To do list for the Psychometric grant
 
+2017_12_08
+* Figure out how to Run the GLM analyses
+* Determine which order to run the scripts for estimating functional connectivity
+* Figure out how to use the VOI file when estimating functional connectivity
+
 
 2017_10_12
 * Create a list of ROIs in various networks for upcoming analyses
