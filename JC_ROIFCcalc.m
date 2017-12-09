@@ -1,4 +1,5 @@
 % check SPM version
+datetime('now')
 if ~strcmpi(spm('ver'), 'spm12')
     error('spm:version:wrongSPMVersion', 'This script requires SPM12.');
 end
@@ -13,7 +14,8 @@ clear matlabbatch;
 % configure root path and subject pattern, as well as file patterns
 %rootpath = '/cluster/folder/craggs/study/preprocessed/';
 %rootpath = '/Volumes/Data/Imaging/R01/preprocessed/';
-rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/';
+%rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/';
+rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/Sub004_v1_pos/'
 cd(rootpath);
 
 % load VOI
@@ -45,7 +47,8 @@ subpattern = 'Sub*_v*';
 n = neuroelf;
 
 % locate FC prepared files
-fcswa = n.findfiles([pwd '/' subpattern], 'fcsw*.nii', '-d1');
+%fcswa = n.findfiles([pwd '/' subpattern], 'fcsw*.nii', '-d1');
+fcswa = n.findfiles([pwd], 'fcsw*.nii', '-d1');
 if isempty(fcswa)
     error('JCfunc:filematch:notFilesFound', 'No FC-prepared files found.');
 end
