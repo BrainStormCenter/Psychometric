@@ -4,10 +4,10 @@
 %		CREATED BY:		JASON CRAGGS
 %		CREATED ON:		2017-12-07
 %
-%		USAGE:			PREPARING THE FUNCTIONAL DATASETS FOR THE
-%                       FUNCTIONAL CONNECTIVITY ANALYSES
+%		USAGE:    PREPARING/CLEANING THE FUNCTIONAL DATASETS FOR THE
+%                   FUNCTIONAL CONNECTIVITY ANALYSES
 %
-% 	MODIFIED ON:	  2017_12_08
+%         MODIFIED ON:	  2017_12_08
 %
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -15,7 +15,7 @@
 %           SETUP FOR A SINGLE SUBJECT
 %           THIS MUST BE RUN FROM THEIR FOLDER
 %
-%           rpfiles = rp-*.txt files = motion parameters
+%           rpfiles = rp-*.txt files contain motion correction parameters
 %                     Columns 1-3 are X/Y/Z movement in mm.
 %                     Columns 4-6 are rotation around X/Y/Z in radians.
 %           wc* = TISSUE CLASSES FROM THE STRUCTURAL DATA
