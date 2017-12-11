@@ -19,9 +19,11 @@ rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/Sub004_v1_pos/'
 cd(rootpath);
 
 % load VOI
-voi = xff('*.voi');
+%voi = xff('*.voi');
+voi = xff('/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/Craggs_VOIs.voi')
 nvoi = numel(voi.VOI);
-voigroups = {'DMN', 'BA13', 'PAIN'};
+%voigroups = {'DMN', 'BA13', 'PAIN'};
+voigroups = {'DMN', 'Pain'};
 voigi = voigroups;
 for vc = 1:numel(voigi)
     voigi{vc} = find(~cellfun('isempty', regexpi(voi.VOINames, ['^' voigroups{vc}])));
@@ -122,3 +124,5 @@ for fc = 1:numel(fcswa)
         fccas(fc, vc) = mean(atanh(fcccs{fc}(voigii{vc})));
     end
 end
+
+save FCvars fc*
