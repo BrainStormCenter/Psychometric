@@ -8,7 +8,7 @@ SubjectVOINamingConvention: <SUBJ>_<VOI>
 
 NrOfVOIs:                   22
 
-NameOfVOI:                  RightAmy
+NameOfVOI:                  Pain_RightAmy
 ColorOfVOI:                 59 216 49
 
 NrOfVoxels:                 149
@@ -163,7 +163,7 @@ NrOfVoxels:                 149
 32           -6           -24
 
 
-NameOfVOI:                  LeftAmy
+NameOfVOI:                  Pain_LeftAmy
 ColorOfVOI:                 58 111 79
 
 NrOfVoxels:                 148
@@ -317,7 +317,7 @@ NrOfVoxels:                 148
 -28          -4           -28
 
 
-NameOfVOI:                  RightHipp
+NameOfVOI:                  DMN_RightHipp
 ColorOfVOI:                 47 231 250
 
 NrOfVoxels:                 606
@@ -929,7 +929,7 @@ NrOfVoxels:                 606
 16           -38          4
 
 
-NameOfVOI:                  LeftHipp
+NameOfVOI:                  DMN_LeftHipp
 ColorOfVOI:                 66 104 152
 
 NrOfVoxels:                 560
@@ -1495,7 +1495,7 @@ NrOfVoxels:                 560
 -14          -38          4
 
 
-NameOfVOI:                  RightThal
+NameOfVOI:                  Pain_RightThal
 ColorOfVOI:                 182 56 30
 
 NrOfVoxels:                 1229
@@ -2730,7 +2730,7 @@ NrOfVoxels:                 1229
 26           -30          -2
 
 
-NameOfVOI:                  LeftThal
+NameOfVOI:                  Pain_LeftThal
 ColorOfVOI:                 108 130 21
 
 NrOfVoxels:                 1311
@@ -4047,7 +4047,7 @@ NrOfVoxels:                 1311
 -24          -32          -4
 
 
-NameOfVOI:                  RightACC
+NameOfVOI:                  Pain_RightACC
 ColorOfVOI:                 7 237 186
 
 NrOfVoxels:                 740
@@ -4793,7 +4793,7 @@ NrOfVoxels:                 740
 4            24           34
 
 
-NameOfVOI:                  LeftACC
+NameOfVOI:                  Pain_LeftACC
 ColorOfVOI:                 60 117 246
 
 NrOfVoxels:                 921
@@ -5720,7 +5720,7 @@ NrOfVoxels:                 921
 -6           24           32
 
 
-NameOfVOI:                  RightAIns
+NameOfVOI:                  Pain_RightAIns
 ColorOfVOI:                 59 125 159
 
 NrOfVoxels:                 725
@@ -6451,7 +6451,7 @@ NrOfVoxels:                 725
 36           -8           12
 
 
-NameOfVOI:                  LeftAIns
+NameOfVOI:                  Pain_LeftAIns
 ColorOfVOI:                 94 252 9
 
 NrOfVoxels:                 769
@@ -7226,7 +7226,7 @@ NrOfVoxels:                 769
 -34          -6           16
 
 
-NameOfVOI:                  RightAngGyrus
+NameOfVOI:                  DMN_RightAngGyrus
 ColorOfVOI:                 203 25 67
 
 NrOfVoxels:                 1995
@@ -9227,7 +9227,7 @@ NrOfVoxels:                 1995
 66           -46          18
 
 
-NameOfVOI:                  LeftAngGyrus
+NameOfVOI:                  DMN_LeftAngGyrus
 ColorOfVOI:                 34 184 27
 
 NrOfVoxels:                 1710
@@ -10943,7 +10943,7 @@ NrOfVoxels:                 1710
 -58          -64          14
 
 
-NameOfVOI:                  RightMCC
+NameOfVOI:                  Pain_RightMCC
 ColorOfVOI:                 183 231 228
 
 NrOfVoxels:                 802
@@ -11751,7 +11751,7 @@ NrOfVoxels:                 802
 2            22           18
 
 
-NameOfVOI:                  LeftMCC
+NameOfVOI:                  Pain_LeftMCC
 ColorOfVOI:                 50 7 190
 
 NrOfVoxels:                 875
@@ -12632,7 +12632,7 @@ NrOfVoxels:                 875
 0            22           18
 
 
-NameOfVOI:                  RightPCC
+NameOfVOI:                  Pain_RightPCC
 ColorOfVOI:                 231 156 158
 
 NrOfVoxels:                 676
@@ -13314,7 +13314,7 @@ NrOfVoxels:                 676
 20           -42          -4
 
 
-NameOfVOI:                  LeftPCC
+NameOfVOI:                  Pain_LeftPCC
 ColorOfVOI:                 147 46 61
 
 NrOfVoxels:                 795
@@ -14115,7 +14115,7 @@ NrOfVoxels:                 795
 -18          -46          -2
 
 
-NameOfVOI:                  RightParaHipp
+NameOfVOI:                  DMN_RightParaHipp
 ColorOfVOI:                 125 42 250
 
 NrOfVoxels:                 464
@@ -14585,7 +14585,7 @@ NrOfVoxels:                 464
 12           -36          -4
 
 
-NameOfVOI:                  LeftParaHipp
+NameOfVOI:                  DMN_LeftParaHipp
 ColorOfVOI:                 120 15 174
 
 NrOfVoxels:                 480
@@ -15071,7 +15071,7 @@ NrOfVoxels:                 480
 -12          -38          -4
 
 
-NameOfVOI:                  RightPIns
+NameOfVOI:                  Pain_RightPIns
 ColorOfVOI:                 133 24 209
 
 NrOfVoxels:                 412
@@ -15489,7 +15489,7 @@ NrOfVoxels:                 412
 36           6            -20
 
 
-NameOfVOI:                  LeftPIns
+NameOfVOI:                  Pain_LeftPIns
 ColorOfVOI:                 38 168 132
 
 NrOfVoxels:                 380
@@ -15875,7 +15875,7 @@ NrOfVoxels:                 380
 -38          2            -18
 
 
-NameOfVOI:                  RightSMA
+NameOfVOI:                  Pain_RightSMA
 ColorOfVOI:                 204 116 110
 
 NrOfVoxels:                 933
@@ -16814,7 +16814,7 @@ NrOfVoxels:                 933
 12           24           30
 
 
-NameOfVOI:                  LeftSMA
+NameOfVOI:                  Pain_LeftSMA
 ColorOfVOI:                 34 44 100
 
 NrOfVoxels:                 987
