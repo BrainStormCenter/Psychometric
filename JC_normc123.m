@@ -4,14 +4,14 @@
 %       CREATED BY:     JOCHEN WEBER
 %       CREATED ON:     11/22/16
 %       MODIFIED BY:	JASON CRAGGS
-%       MODIFIED ON:	2017_09_27
-%       MODIFIED ON:	  2017_12_07
 %
 %       USAGE:          PREPROCESS JASON'S R01 DATA
 %       MODIFIED TO:    JASON IS PREPROCESSING ADDITIONAL SUBJECTS
 %                       WHICH REQUIRES THAT THEY BE IN A DIFFERENT FOLDER
 %
-%       December 7, 2017: TESTING WHAT THIS SCRIPT ACTUALLY DOES
+%         MODIFIED ON:	2017_09_27
+%         MODIFIED ON:	  2017_12_07
+%    	MODIFIED ON:	 2017_12_12
 %%
 
 if ~strcmpi(spm('ver'), 'spm12')
@@ -27,9 +27,9 @@ clear matlabbatch;
 
 % configure root path and subject pattern, as well as file patterns
 %rootpath = '/cluster/folder/craggs/study/preprocessed/';
-%rootpath = '/Volumes/Data/Imaging/R01/preprocessed/';
+%rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/';
 %rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason/';
-rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/';
+rootpath = '/Volumes/Data/Imaging/R01/preprocessed/';
 subpattern = 'Sub*_v*';
 
 % get subjects
