@@ -13,26 +13,53 @@
 %              OF THAT ROI WITH ALL OTHER VOXELS IN THE BRAIN
 %
 %         MODIFIED ON:	  2017_12_08
+%    	MODIFIED ON:	 2017_12_12
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %
 %
-%              SETUP FOR A SINGLE SUBJECT
-%              THIS MUST BE RUN FROM THEIR FOLDER
+%              SETUP FOR BATCH PROCESSING
+%              THIS MUST BE RUN FROM THE ROOT FOLDER
 %
 %              fcswa = preprocessed/cleaned functional datasets
 %              roifiles = masks of brain regions being studied
+%                        THE ROI FILES MUST BE IN EACH SUBJECT'S FOLDER 
 %
-%
-n = neuroelf;
-%fcswa = n.findfiles([pwd '/Sub*'], 'fcsw*.nii', '-d1')
-fcswa = n.findfiles([pwd], 'fcsw*.nii', '-d1');
-roifiles = n.findfiles(pwd, 'r???_*.nii', '-d1');
 
-%              PASS THE VARIABLES TO THE FUNCTION BELOW
-JC_FCcalc(fcswa, roifiles)
+n = neuroelf;
 %
+%rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/';
+rootpath = '/Volumes/Data/Imaging/R01/preprocessed/';
+subpattern = 'Sub*_v*';
+%roipath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/resliced_masks/'
+
+% find subjects in root folder
+dirinfo = dir([rootpath subpattern]);
+subjlist = {dirinfo.name};
+%
+% pick subject according to job number
+for sc = 1:numel(subjlist)
+
+    % set primary path
+    primary_path = [rootpath subjlist{sc} filesep];
+    cd(primary_path);
+    fcswa = n.findfiles([pwd], 'fcsw*.nii', '-d1')
+    fcswa = n.findfiles([pwd], 'fcsw*.nii', '-d1');
+    roifiles = n.findfiles([pwd], 'r???_*.nii', '-d1');
+    %roifiles = n.findfiles(roipath, 'r???_*.nii', '-d1');
+
+    % %              PASS THE VARIABLES TO THE FUNCTION BELOW
+     JC_FCcalc(fcswa, roifiles)
+end
+
+% %fcswa = n.findfiles([pwd '/Sub*'], 'fcsw*.nii', '-d1')
+% fcswa = n.findfiles([pwd], 'fcsw*.nii', '-d1');
+% roifiles = n.findfiles(pwd, 'r???_*.nii', '-d1');
+%
+% %              PASS THE VARIABLES TO THE FUNCTION BELOW
+% JC_FCcalc(fcswa, roifiles)
+% %
 %
 %
 %              END OF SCRIPT
