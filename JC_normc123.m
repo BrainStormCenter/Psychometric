@@ -6,12 +6,16 @@
 %       MODIFIED BY:	JASON CRAGGS
 %
 %       USAGE:          PREPROCESS JASON'S R01 DATA
+%                       I wrote a second script to only normalize the c1/c2/c3
+%                       files to then perform the FCprepro step (which uses the
+%                       GM/WM/CSF files *in the functional space* as global
+%                       signal sources).
 %       MODIFIED TO:    JASON IS PREPROCESSING ADDITIONAL SUBJECTS
-%                       WHICH REQUIRES THAT THEY BE IN A DIFFERENT FOLDER
+%
 %
 %         MODIFIED ON:	2017_09_27
-%         MODIFIED ON:	  2017_12_07
-%    	MODIFIED ON:	 2017_12_12
+%         MODIFIED ON:	2017_12_07
+%    	MODIFIED ON:	2017_12_12
 %%
 
 if ~strcmpi(spm('ver'), 'spm12')
