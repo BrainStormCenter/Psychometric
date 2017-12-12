@@ -13,14 +13,17 @@ clear matlabbatch;
 
 % configure root path and subject pattern, as well as file patterns
 %rootpath = '/cluster/folder/craggs/study/preprocessed/';
-%rootpath = '/Volumes/Data/Imaging/R01/preprocessed/';
 %rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/';
-rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/Sub004_v1_pos/'
+%rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason/';
+%rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/Sub004_v1_pos/'
+rootpath = '/Volumes/Data/Imaging/R01/preprocessed/';
 cd(rootpath);
 
 % load VOI
 %voi = xff('*.voi');
-voi = xff('/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/Craggs_VOIs.voi')
+%voi = xff('/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/Craggs_VOIs.voi')
+%voi = xff('/Volumes/Data/Imaging/R01/preprocessed/_Jason/Craggs_VOIs.voi')
+voi = xff('/Volumes/Data/Imaging/R01/preprocessed/Craggs_VOIs.voi')
 nvoi = numel(voi.VOI);
 %voigroups = {'DMN', 'BA13', 'PAIN'};
 voigroups = {'DMN', 'Pain'};
@@ -49,8 +52,8 @@ subpattern = 'Sub*_v*';
 n = neuroelf;
 
 % locate FC prepared files
-%fcswa = n.findfiles([pwd '/' subpattern], 'fcsw*.nii', '-d1');
-fcswa = n.findfiles([pwd], 'fcsw*.nii', '-d1');
+fcswa = n.findfiles([pwd '/' subpattern], 'fcsw*.nii', '-d1');
+%fcswa = n.findfiles([pwd], 'fcsw*.nii', '-d1');
 if isempty(fcswa)
     error('JCfunc:filematch:notFilesFound', 'No FC-prepared files found.');
 end
