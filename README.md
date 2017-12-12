@@ -1,14 +1,21 @@
 # Psychometric
-Scripts for processing data for the psychometric grant
-The scripts are to be run in the following order:
+These are the scripts for processing data for the psychometric grant
+
+The scripts should be run in the following order
 1. convertDicom
 2. JC_preprocessing
-3. JC_3DMC.m
-* JC_normc123 -- ARE THESE COMMANDS IN JC_preprocessing?
-4. JC_FCprepro.m
-5. JC_FCcalc.m
-6. JC_ROIFCcalc.m
+3. JC_normc123
+4. JC_FCpreproSetup -> JC_FCprepro
+5. JC_FCCalcSetup -> JC_FCcalc
+6. JC_ROIFCcalc
+7. JC_3DMC.m
 7. JC_rext_plot.m
+
+Script #4 will call the JC_FCprepro function
+Script #5 will call the JC_FCcalc function
+Script #7 is used for quality control. This script goes through each subject's motion correction files and identifies outliers and writes them to a file for inspection.
+Script #8 does...        
+
 
 A new script will be added in the near future that will provide information about data quality and motion correction estimates.
 
@@ -36,5 +43,52 @@ This script uses SPM12 to perform the following steps of preprocessing on all su
 * then the functional data is normalized to MNI/ICBM space with a 3mm isotropic resolution
 * and finally, the normalized functional data is smoothed using a 6mm FWHM Gaussian kernel
 
-##    JC_3DMC.m (script 3)
+##    JC_normc123 (script 3)
+ Jochen wrote a second script to only normalize the c1/c2/c3 files to then perform the FCprepro step (which uses the GM/WM/CSF files *in the functional space* as global signal sources).
+
+##    JC_FCpreproSetup (script 4)
+This script finds the files used by the function: JC_FCprepro
+### -->    JC_FCprepro (Uses):
+JC_FCPREPRO  Preprocess functional data file(s) for functional connectivity
+JC_FCPREPRO(PPFILE, RPFILE) removes the variance associated with
+columns in RPFILE (text file or matfile) from PPFILE.
+
+JC_FCPREPRO(PPFILE, RPFILE, TRFILT) also removes low-frequency drifts
+present in the data up to TRFILT wavelength (using DCT filtering).
+
+JC_FCPREPRO(PPFILE, RPFILE, TRFILT, GSFILES) also removes the mean
+covariate from each file in GSFILES (resampled to the space in PPFILE)
+
+This function uses SPM functions, and thus is dependent on SPM8 or
+higher. Functions used include spm_vol, spm_read_vols, spm_write_vol,
+spm_filter, and others.
+
+The function will make a copy of (each of) the input file(s) with a
+prefix of "fc" (e.g. "fcswraRUN.nii").
+
+##    JC_FCCalcSetup (script 5)
+This script finds the files used by the function JC_FCcalc
+### -->JC_FCcalc (uses)
+JC_FCPREPRO  Preprocess functional data file(s) for functional connectivity
+JC_FCPREPRO(PPFILE, RPFILE) removes the variance associated with
+columns in RPFILE (text file or matfile) from PPFILE.
+
+JC_FCPREPRO(PPFILE, RPFILE, TRFILT) also removes low-frequency drifts
+present in the data up to TRFILT wavelength (using DCT filtering).
+
+JC_FCPREPRO(PPFILE, RPFILE, TRFILT, GSFILES) also removes the mean
+covariate from each file in GSFILES (resampled to the space in PPFILE)
+
+This function uses SPM functions, and thus is dependent on SPM8 or
+higher. Functions used include spm_vol, spm_read_vols, spm_write_vol,
+spm_filter, and others.
+
+The function will make a copy of (each of) the input file(s) with a
+prefix of "fc" (e.g. "fcswraRUN.nii").
+
+6. JC_ROIFCcalc
+7. JC_3DMC.m
+7. JC_rext_plot.m
+
+##    JC_3DMC.m (script 7)
 USAGE:  This script gathers information about the motion correction estimates and then writes out the results to files.
