@@ -1,5 +1,27 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%
+%		CREATED BY:		JOCHEN WEBER
+%		CREATED ON:		2017-12-13
+%
+%		USAGE:			TESTING ROI CORRELATIONS ACROSS GROUPS
+%
+%    	MODIFIED ON:	 2017_12_13
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%
+%
+%
+%
+
 % neuroelf library
 n = neuroelf;
+
+%         SET PRIMARY PATH
+rootpath = '/Volumes/Data/Imaging/R01/preprocessed/';
+
+cd(rootpath);
 
 % load variable
 load FCvars.mat % contains slistd!
