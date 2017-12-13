@@ -20,7 +20,7 @@ rootpath = '/Volumes/Data/Imaging/R01/preprocessed/';
 cd(rootpath);
 
 % load VOI
-%voi = xff('*.voi');
+%voi = xff('*.voi');     THIS CREATES A POPUP WINDOW TO CHOOSE THE voi file 
 %voi = xff('/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/Craggs_VOIs.voi')
 %voi = xff('/Volumes/Data/Imaging/R01/preprocessed/_Jason/Craggs_VOIs.voi')
 voi = xff('/Volumes/Data/Imaging/R01/preprocessed/Craggs_VOIs.voi')
