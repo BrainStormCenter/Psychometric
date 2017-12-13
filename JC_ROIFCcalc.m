@@ -128,4 +128,8 @@ for fc = 1:numel(fcswa)
     end
 end
 
-save FCvars fc*
+clear fcdata
+
+load '/Volumes/Data/Imaging/R01/preprocessed/slistd';
+
+save FCvars fc* slistd
