@@ -1,5 +1,11 @@
 # To do list for the Psychometric grant
 
+January 4, 2018
+* Goals for first set of data analyses
+  * Are there group differences in the correlations among the pain and DMN brain regions
+
+
+
 2017_12_08
 * Figure out how to Run the GLM analyses
 * Determine which order to run the scripts for estimating functional connectivity
