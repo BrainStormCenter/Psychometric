@@ -55,7 +55,12 @@ Colorado notes and processing steps
 
 
 # Processing data
-## auditory oddball paradigm
+## Auditory oddball paradigm
   * 12% target (1000 MHz 200ms tone)
   * 12% novel (random 700ms tone)
   * 76% standard (500ms tone)
+
+
+
+## Group ICA
+* Start with a group ICA and then back reconstruction to each individual
