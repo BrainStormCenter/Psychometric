@@ -7,6 +7,7 @@
 %       MODIFIED BY:    JASON CRAGGS
 %       MODIFIED ON:    2017_09_20
 %       MODIFIED ON:	  2017_12_06
+%   	MODIFIED ON:	  2018_01_09  (ADDED INFO ABOUT SLICE TIMING)
 %
 %       USAGE:          PREPROCESS JASON'S R01 DATA
 %       MODIFIED TO:    JASON IS PREPROCESSING ADDITIONAL SUBJECTS
@@ -43,6 +44,9 @@ nvols = 125;
 nslices = 42;
 TR = 2.8;
 
+%   SLICE ACQUISITION ORDER IS INTERLEAVED BUT THE
+%   FIRST SLICE ACQUIRED IS SLICE #2; THEREFORE THE
+%   CORRECT SPM SPECIFICATION IS [2:2:42 1:2:42]
 % slice aquisition order (interleaved bottom) and reference slice
 if mod(nslices, 2) == 1
     sliceorder = [1:2:nslices, 2:2:nslices];
