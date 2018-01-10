@@ -5,12 +5,13 @@ Colorado notes and processing steps
   * open the raw data with the 'display' button
   * put crosshair on AC and press 'Reorient'
 2. Art repair
-3. INRIalign (creates: .mat, rp [movement], mean)
-  * Reslice only
+3. Slice Timine correction (output prefix = a)
+4. INRIalign (creates: .mat, rp [movement], mean)
+  * Coregister and Reslice (this will provide the motion graphs)
   * sinc interpolation
   * create mean image only
 4. Normalize to epi template, spatial manipulation.
-  * Use the SPM old normalize routine
+  * Use the SPM old normalize (estimate and write) routine
   * be sure to delete the original normalize module
   * Source image = mean images
   * images to write = functional data set
@@ -19,8 +20,8 @@ Colorado notes and processing steps
   * set voxel size to [3 3 3]
   * the smoothing kernel used in this step influences edge detection etc..
   * The data written out during this step is NOT smoothed
-5. smooth the normalized data
-6. Specify the first level analyses
+6. smooth the normalized data
+7. Specify the first level analyses
   * set output directory
   * units for design = scans
   * interscan interval = TR
