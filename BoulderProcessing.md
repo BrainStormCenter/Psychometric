@@ -69,3 +69,79 @@ Colorado notes and processing steps
 
 ## Group ICA
 * Start with a group ICA and then back reconstruction to each individual
+
+# GIFT analyses steps
+##  Setup ICA analyses
+* choose output folder
+* create prefix
+* select fMRI data
+* number of IC (use default for initial analyses)
+* autofill data reduction (set to yes)
+* algorithm (use infomax for initial analyses)
+* stability analysis type = Regular
+* How to run Group ICA (serial for small datasets)
+
+## Setup ICA-Defaults
+* Type of data pre-Processing (remove mean per timepoint)
+* what mask to use (default)
+* Type of PCA (standard)
+* Type of Group PCA (subject specific)
+* Back reconstruction type (GICA)
+* Scale the results (no scaling)
+* Group ICA type (spatial)
+* Data reduction steps (default = 2)
+* Number of PC (default = 30)
+* Number of PC/IC (default = 20)
+### --> Press done
+
+## Options for infomax algorithm
+* use default settings for now (January 16, 2018)
+
+## Run analysis
+* Select parameter file (use the one just created in the output directory)
+* Analysis step/steps (All***)
+* performance settings (default setting = user specified settings)
+### --> press done
+
+## Visualization
+* Component explorer
+  * Sort Components = No
+  * view mean Component (all) = the mean of subjects and sessions
+    * --> press 'display' [Component 13 seems best DMN for now]
+* Subject Component explorer (display specific component for all subjects/sessions) [choose component 13]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  # END Notes
