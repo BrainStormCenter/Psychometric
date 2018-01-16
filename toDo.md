@@ -1,5 +1,17 @@
 # To do list for the Psychometric grant
 
+January 4, 2018
+* Goals for first set of data analyses
+  * First manuscript
+   * Are there differences in the correlations among the pain and DMN brain regions between the healthy controls and the (collapsed) chronic pain groups?
+   * Are there group differences in the correlations among the pain and DMN brain regions before any mood manipulation?
+ * Second manuscript
+   * Are there group differences in the correlations among the pain and DMN brain regions before and after the manipulation of mood?
+ * Third manuscript
+   * Are there group differences in the correlations among the pain, DMN, and sleep brain regions (sleep regions to be added)
+
+
+
 2017_12_08
 * Figure out how to Run the GLM analyses
 * Determine which order to run the scripts for estimating functional connectivity
