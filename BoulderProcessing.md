@@ -82,7 +82,7 @@ Colorado notes and processing steps
 * How to run Group ICA (serial for small datasets)
 
 ## Setup ICA-Defaults
-* Type of data pre-Processing (remove mean per timepoint)
+* Type of data pre-Processing (remove mean per time-point)
 * what mask to use (default)
 * Type of PCA (standard)
 * Type of Group PCA (subject specific)
