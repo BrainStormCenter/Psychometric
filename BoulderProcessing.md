@@ -14,7 +14,7 @@ Colorado notes and processing steps
   * Coregister and Reslice (this will provide the motion graphs)
   * sinc interpolation
   * create mean image only
-4. Normalize to epi template (output prefix = 'w').
+5. Normalize to epi template (output prefix = 'w').
   * Use the SPM old normalize (estimate and write) routine
   * be sure to delete the original normalize module
   * Source image = mean images
