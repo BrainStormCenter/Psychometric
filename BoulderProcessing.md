@@ -65,10 +65,8 @@ Colorado notes and processing steps
   * 12% novel (random 700ms tone)
   * 76% standard (500ms tone)
 
-
-
 ## Group ICA
-* Start with a group ICA and then back reconstruction to each individual
+Start with a group ICA and then back reconstruction to each individual
 
 # GIFT analyses steps
 ##  Setup ICA analyses
@@ -110,7 +108,20 @@ Colorado notes and processing steps
     * --> press 'display' [Component 13 seems best DMN for now]
 * Subject Component explorer (display specific component for all subjects/sessions) [choose component 13]
 
-
+## MANCOVAN (for doing group comparisons)
+After running  the group ICA select the MANCOVAN tool under utilities
+* Create Design Matrix
+  * Select ICA parameter file (\*\_ica\_parameter\_info.mat)
+    * Select design criteria (leave as MANCOVAN)
+    * To add covariates:
+      * press '+'
+      * enter covariate name (e.g., 3dmc1 for motion correction parameters)
+      * copy and paste the values into the box below
+      * --> press Done
+* Setup Features
+  * Select MANCOVAN parameter file (\*\_mancovan.mat)
+    * Choose model interactions (press 'Cancel' if none)
+* Run MANCOVAN
 
 
 
