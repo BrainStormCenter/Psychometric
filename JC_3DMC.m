@@ -13,6 +13,7 @@
 %       MODIFIED ON:    2017_10_07
 %       MODIFIED ON:    2017_10_09
 %       MODIFIED ON:    2017_10_12
+%    	MODIFIED ON:	  2018_01_23
 %
 %%       DETAILS OF WHAT THE SCRIPT DOES
 %       SPECIFY LIBRARIES TO BE USED - IS THIS NECESSARY (?)
@@ -40,6 +41,8 @@
 
 
 %       configure root path and subject pattern, as well as file patterns
+%       set rootpath
+% rootDirectory = uigetdir;
 rootpath = '/Volumes/Data/Imaging/R01/preprocessed/';
 % rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason/';
 subpattern = 'Sub*_v*';
