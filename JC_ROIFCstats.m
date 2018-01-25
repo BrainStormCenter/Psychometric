@@ -106,6 +106,12 @@ stats
 % as a one-sample t-test
 
 
+
+char(voinames(voiorder))
+painnames = char(voinames(voiorder(1:16)))
+dmnnames = char(voinames(voiorder(17:22)))
+
+
 %         SAVE WORKSPACE
 ROIFCstatsOutput = ['ROIFCstats_',datestr(now, 'dd-mm-yyyy'),'.mat']
 save(ROIFCstatsOutput);
