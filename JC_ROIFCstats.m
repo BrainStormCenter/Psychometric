@@ -104,3 +104,8 @@ p
 stats
 
 % as a one-sample t-test
+
+
+%         SAVE WORKSPACE
+ROIFCstatsOutput = ['ROIFCstats_',datestr(now, 'dd-mm-yyyy'),'.mat']
+save(ROIFCstatsOutput);

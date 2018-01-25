@@ -1,0 +1,46 @@
+p =
+
+    0.0036
+
+
+stats =
+
+    tstat: 3.0331
+       df: 61.0174
+       sd: [2x1 double]
+
+
+p =
+
+    0.0091
+
+
+stats =
+
+    tstat: 2.6936
+       df: 60.8307
+       sd: [2x1 double]
+
+
+p =
+
+    0.2547
+
+
+stats =
+
+    tstat: -1.1486
+       df: 69.5682
+       sd: [2x1 double]
+
+
+p =
+
+    0.1060
+
+
+stats =
+
+    tstat: -1.6329
+       df: 89
+       sd: 0.0493
