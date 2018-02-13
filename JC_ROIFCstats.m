@@ -7,9 +7,10 @@
 %		USAGE:			TESTING ROI CORRELATIONS ACROSS GROUPS
 %
 %    	MODIFIED ON:	 2017_12_13
-%   	MODIFIED ON:	  2018_02_01
-%   	MODIFIED ON:	  2018_02_02
-%       MODIFIED ON:	  2018_02_12
+%         MODIFIED ON:	  2018_02_01
+%         MODIFIED ON:	  2018_02_02
+%         MODIFIED ON:	  2018_02_12
+%         MODIFIED ON:	 2018_02_13
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
@@ -126,6 +127,22 @@ anovaPreOutput = [gnames(c(:,1)), gnames(c(:,2)), num2cell(c(:,3:6))];
 %       CREATE A TABLE OF THE MULTICOMPARISON OUTPUT
 anovaPreOutput = anovaPreOutput(:,[1 2 6 4 3 5]);
 tableAnovaPre = array2table(anovaPreOutput, 'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
+
+
+
+%%             SYNTAX FOR PERFORMING A MANOVA
+%              START BY CREATING A VECTOR REPRESENTING ALL THE GROUPS
+gp1 = ones(length(i1),1);
+gp2 = 2*ones(length(i2),1);
+gp3 = 3*ones(length(i3),1);
+gps123 = cat(1,gp1,gp2,gp3);
+groups = nominal(gps123);               % SPECIFY THIS AS AN ORDINAL VARIABLE
+groups = setlabels(groups,{'HC','CLBP','FM'});    % SET THE VARIABLE LABELS
+prePain123 = cat(1,prePainHC, prePainCLBP,prePainFM);  % CREATE ANOTHER VECTOR TO INCLUDE
+%              RUN THE MANOVA
+[d,p,stats] = manova1(prePain123,groups)
+
+%{
 
 %%           ANALYSIS #1 (3 GROUP ANOVA FOR POST COLLAPSED ACROSS CONDITIONS)
 %       COMPUTING 3-GROUP ANOVA FOR THE PRE-MANIPULATION RESTING STATE SCANS
@@ -341,7 +358,7 @@ tableTtest = table(Gps,scanSet,cond,Hy,pval,tVal,'VariableNames',{'group','scanS
 ROIFCstatsOutput = ['ROIFCstats_',datestr(now, 'dd-mm-yyyy'),'.mat']
 save(ROIFCstatsOutput);
 
-
+%}
 
 
 
