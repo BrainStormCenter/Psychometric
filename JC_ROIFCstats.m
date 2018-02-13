@@ -142,7 +142,7 @@ prePain123 = cat(1,prePainHC, prePainCLBP,prePainFM);  % CREATE ANOTHER VECTOR T
 %              RUN THE MANOVA
 [d,p,stats] = manova1(prePain123,groups)
 
-%{
+
 
 %%           ANALYSIS #1 (3 GROUP ANOVA FOR POST COLLAPSED ACROSS CONDITIONS)
 %       COMPUTING 3-GROUP ANOVA FOR THE PRE-MANIPULATION RESTING STATE SCANS
@@ -358,7 +358,7 @@ tableTtest = table(Gps,scanSet,cond,Hy,pval,tVal,'VariableNames',{'group','scanS
 ROIFCstatsOutput = ['ROIFCstats_',datestr(now, 'dd-mm-yyyy'),'.mat']
 save(ROIFCstatsOutput);
 
-%}
+
 
 
 
