@@ -1,5 +1,10 @@
 # To do list for the Psychometric grant
 
+February 12, 2018
+* Determine how to include a covariate in the ANOVA analyses in the JC_ROIFCstats.m file
+* what are the variables in slistd ?
+
+
 January 4, 2018
 * Goals for first set of data analyses
   * First manuscript
