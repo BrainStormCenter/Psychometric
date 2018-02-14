@@ -1,5 +1,9 @@
 # To do list for the Psychometric grant
 
+February 14, 2018
+* demonstrating the use of atom for the lab
+
+
 January 4, 2018
 * Goals for first set of data analyses
   * First manuscript
