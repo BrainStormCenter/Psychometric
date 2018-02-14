@@ -1,4 +1,6 @@
 # To do list for the Psychometric grant
+February 14, 2018
+* demo for lab 
 
 February 12, 2018
 * Determine how to include a covariate in the ANOVA analyses in the JC_ROIFCstats.m file
