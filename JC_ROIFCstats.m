@@ -350,9 +350,11 @@ tableAnovaPosPost = array2table(anovaPostPosOutput, 'VariableNames',{'gp1','gp2'
     cond = ([cond;{'pos'}]);
     Hy = ([Hy;h]);
 
+
+
 %%       CREATING A TABLE OF OUTPUT VARIABLES
 tableTtest = table(Gps,scanSet,cond,Hy,pval,tVal,'VariableNames',{'group','scanSet','Condition','Sig','pvalue','tvalue'});
-
+writetable(tableTtest,'t-tests.txt','Delimiter',' ');
 
 %%         SAVE WORKSPACE
 ROIFCstatsOutput = ['ROIFCstats_',datestr(now, 'dd-mm-yyyy'),'.mat']
