@@ -4,7 +4,7 @@
 %		CREATED BY:		JOCHEN WEBER
 %		CREATED ON:		2017-12-13
 %
-%		USAGE:			TESTING ROI CORRELATIONS ACROSS GROUPS
+%		USAGE:			TESTING DMN ROI CORRELATIONS ACROSS GROUPS
 %
 %    	MODIFIED ON:	 2017_12_13
 %         MODIFIED ON:	  2018_02_01
@@ -77,9 +77,12 @@ dmnzgfcccs = zgfcccs(17:22, 17:22, :, :, :);
 
 % average connectivity strengths
 %   THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE 16 PAIN REGIONS
-painnet = squeeze(mean(mean(painzgfcccs, 1), 2));
+painnet = squeeze(sum(sum(painzgfcccs, 1), 2)) ./ (16 * 15);
 %   THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE 6 DMN REGIONS
-dmnnet = squeeze(mean(mean(dmnzgfcccs, 1), 2));
+dmnnet = squeeze(sum(sum(dmnzgfcccs, 1), 2)) ./ (6 * 5);
+
+% get left amygdala (region 2) to left anterior insula (region 8) from pain network
+pain_lamyg_2_linsula = squeeze(painzgfcccs(2, 8, :, :, :));
 
 % to unpack:
 % - i1 and i2 are the indices for groups HC and CLBP
@@ -90,6 +93,7 @@ dmnnet = squeeze(mean(mean(dmnzgfcccs, 1), 2));
 char(voinames(voiorder));
 painnames = char(voinames(voiorder(1:16)));
 dmnnames = char(voinames(voiorder(17:22)));
+
 %%           ANALYSIS #0 (3 GROUP ANOVA FOR PRE)
 %       COMPUTING 3-GROUP ANOVA FOR THE PRE-MANIPULATION RESTING STATE SCANS
 %       STEP 1 = CREATE VARIABLES OF THE MEAN CORRELATION OF ALL PAIN REGIONS
