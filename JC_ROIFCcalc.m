@@ -1,3 +1,19 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%		CREATED BY:		JOCHEN WEBER
+%		CREATED ON:		2016-11-27
+%
+%		USAGE:			CALCULATING ROI TO ROI CONNECTIVITY
+%
+%    	MODIFIED ON:	 2018_03_15
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%    The difference between JC_FCcalc and JC_ROIFCcalc:
+%    JC_FCcalc correlates a ROI to the whole brain
+%    JC_ROIFCcalc correlates ROI to ROI
+%%
+
 % check SPM version
 datetime('now')
 if ~strcmpi(spm('ver'), 'spm12')
@@ -19,14 +35,18 @@ clear matlabbatch;
 rootpath = '/Volumes/Data/Imaging/R01/preprocessed/';
 cd(rootpath);
 
-% load VOI
-%voi = xff('*.voi');     THIS CREATES A POPUP WINDOW TO CHOOSE THE voi file 
+% load the VOI file
+%voi = xff('*.voi');     THIS CREATES A POPUP WINDOW TO CHOOSE THE voi file
 %voi = xff('/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/Craggs_VOIs.voi')
 %voi = xff('/Volumes/Data/Imaging/R01/preprocessed/_Jason/Craggs_VOIs.voi')
-voi = xff('/Volumes/Data/Imaging/R01/preprocessed/Craggs_VOIs.voi')
+%voi = xff('/Volumes/Data/Imaging/R01/preprocessed/Craggs_VOIs.voi')
+voi = xff('/Users/jcraggs/Documents/GitHub/Psychometric/ROIs/AALmasks1.voi')
 nvoi = numel(voi.VOI);
+
+%    DEFINE THE "NETWORKS" IN THE VOI FILE (i.e., THE PREFIXES TO THE ROIs)
 %voigroups = {'DMN', 'BA13', 'PAIN'};
-voigroups = {'DMN', 'Pain'};
+%voigroups = {'DMN', 'Pain'};
+voigroups = {'DMN', 'Pain', 'Both'};
 voigi = voigroups;
 for vc = 1:numel(voigi)
     voigi{vc} = find(~cellfun('isempty', regexpi(voi.VOINames, ['^' voigroups{vc}])));
@@ -131,5 +151,7 @@ end
 clear fcdata
 
 load '/Volumes/Data/Imaging/R01/preprocessed/slistd';
+
+FCvars = ['FCvars_',datestr(now, 'dd-mm-yyyy'),'.mat'];
 
 save FCvars fc* slistd
