@@ -9,8 +9,11 @@ The scripts should be run in the following order
 5. JC_FCCalcSetup -> JC_FCcalc
 6. JC_ROIFCcalc
 7. JC_3DMC.m
-7. JC_rext_plot.m
+8. JC_rext_plot.m
 
+The difference between JC_FCcalc and JC_ROIFCcalc:
+* JC_FCcalc correlates a ROI to the whole brain
+* JC_ROIFCcalc correlates ROI to ROI
 Script #4 will call the JC_FCprepro function
 Script #5 will call the JC_FCcalc function
 Script #7 is used for quality control. This script goes through each subject's motion correction files and identifies outliers and writes them to a file for inspection.
