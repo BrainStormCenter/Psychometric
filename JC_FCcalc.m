@@ -3,6 +3,9 @@
 %
 %		CREATED ON:		2016-11-25
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% JC_FCcalc computes one map for each VOI-by-VTC combination, such that
+% for each VOI in the VOI files list, a map is written out.
 
 function JC_FCcalc(fcfiles, roifiles)
 %   JC_FCCALC  Calculate functional connectivity maps
