@@ -11,6 +11,7 @@
 %         MODIFIED ON:	  2018_02_02
 %         MODIFIED ON:	  2018_02_12
 %         MODIFIED ON:	 2018_02_13
+%    	MODIFIED ON:	 2018_03_20
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
@@ -27,13 +28,16 @@ cd(rootpath);
 load FCvars.mat
 
 % load VOI
-voi = xff('Craggs_VOIs.voi');
+%voi = xff('Craggs_VOIs.voi');
+voi = xff('/Users/jcraggs/Documents/GitHub/Psychometric/ROIs/AALmasks1.voi');
 voinames = voi.VOINames;
 
 % indices for pain
-pain = find(~cellfun('isempty', regexpi(voinames, '^pain')));
-dmn = find(~cellfun('isempty', regexpi(voinames, '^dmn')));
-voiorder = [pain; dmn];
+pain = find(~cellfun('isempty', regexpi(voinames, '^Pain')));
+dmn = find(~cellfun('isempty', regexpi(voinames, '^DMN')));
+both = find(~cellfun('isempty', regexpi(voinames, '^Both')));
+%voiorder = [pain; dmn];
+voiorder = [pain; dmn; both];
 nvs = numel(voiorder);
 
 % find subjects in three groups
@@ -72,17 +76,43 @@ zgfcccs = squeeze(mean(zgfcccs, 4));
 % to split into within network matrices
 %   THESE ARE ARRAYS OF CROSS CORRELATIONS AMONG REGIONS IN EACH NETWORK
 %   THE ARRAYS ARE ORGANIZED AS (REGIONS^REGIONS, ALL SUBJECTS, PRE & POST, POS & NEG)
-painzgfcccs = zgfcccs(1:16, 1:16, :, :, :);
-dmnzgfcccs = zgfcccs(17:22, 17:22, :, :, :);
+
+%painstart = bothend +1;
+painstart = 1;
+painend = length(pain);
+dmnstart = painend + 1;
+dmnend = length(pain) + length(dmn);
+bothstart = dmnend + 1;
+bothend = length(both) + length(pain) + length(dmn);
+
+% painend = length(both)+length(pain);
+% dmnstart = painend +1;
+% dmnend = length(both) + length(pain) + length(dmn);
+% bothstart = 1;
+% bothend = length(both)+1;
+
+bothzgfcccs = zgfcccs(bothstart:bothend, bothstart:bothend, :, :, :);
+painzgfcccs = zgfcccs(painstart:painend, painstart:painend, :, :, :);
+dmnzgfcccs = zgfcccs(dmnstart:dmnend, dmnstart:dmnend, :, :, :);
+
+
+%painzgfcccs = zgfcccs(1:16, 1:16, :, :, :);
+%dmnzgfcccs = zgfcccs(17:22, 17:22, :, :, :);
 
 % average connectivity strengths
+%   THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE PAIN REGIONS
+painnet = squeeze(sum(sum(painzgfcccs, 1), 2)) ./ (length(pain) * (length(pain) -1));
+%   THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE DMN REGIONS
+dmnnet = squeeze(sum(sum(dmnzgfcccs, 1), 2)) ./ (length(dmn) * (length(dmn) -1));
+%
+%%
 %   THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE 16 PAIN REGIONS
-painnet = squeeze(sum(sum(painzgfcccs, 1), 2)) ./ (16 * 15);
+%painnet = squeeze(sum(sum(painzgfcccs, 1), 2)) ./ (16 * 15);
 %   THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE 6 DMN REGIONS
-dmnnet = squeeze(sum(sum(dmnzgfcccs, 1), 2)) ./ (6 * 5);
+%dmnnet = squeeze(sum(sum(dmnzgfcccs, 1), 2)) ./ (6 * 5);
 
 % get left amygdala (region 2) to left anterior insula (region 8) from pain network
-pain_lamyg_2_linsula = squeeze(painzgfcccs(2, 8, :, :, :));
+%pain_lamyg_2_linsula = squeeze(painzgfcccs(2, 8, :, :, :));
 
 % to unpack:
 % - i1 and i2 are the indices for groups HC and CLBP
@@ -91,14 +121,21 @@ pain_lamyg_2_linsula = squeeze(painzgfcccs(2, 8, :, :, :));
 %
 %           LIST OUT THE BRAIN REGIONS IN THE PAIN AND DMN NETWORKS
 char(voinames(voiorder));
-painnames = char(voinames(voiorder(1:16)));
-dmnnames = char(voinames(voiorder(17:22)));
+painnames = char(voinames(voiorder(painstart:painend)));
+dmnnames = char(voinames(voiorder(dmnstart:dmnend)));
+bothnames = char(voinames(voiorder(bothstart:bothend)));
+%painnames = char(voinames(voiorder(1:16)));
+%dmnnames = char(voinames(voiorder(17:22)));
 
 % computing the ANOVA for all pairs
-pain_anovaresults_effect = zeros(16, 16);
-pain_anovaresults_pvalue = zeros(16, 16);
-for node1 = 1:16
-    for node2 = 1:16
+pain_anovaresults_effect = zeros(length(pain),length(pain));
+pain_anovaresults_pvalue = zeros(length(pain),length(pain));
+%pain_anovaresults_effect = zeros(16, 16);
+%pain_anovaresults_pvalue = zeros(16, 16);
+% for node1 = 1:16
+%     for node2 = 1:16
+for node1 = 1:length(pain)
+     for node2 = 1:length(pain)
         prePainHC = mean(squeeze(painzgfcccs(node1, node2, i1, 1, :)), 2);
         prePainCLBP = mean(squeeze(painzgfcccs(node1, node2, i2, 1, :)), 2);
         prePainFM = mean(squeeze(painzgfcccs(node1, node2, i3, 1, :)), 2);
@@ -124,6 +161,7 @@ for node1 = 1:16
         pain_anovaresults_pvalue(node1, node2) = p;
     end
 end
+
 
 %%           ANALYSIS #0 (3 GROUP ANOVA FOR PRE)
 %       COMPUTING 3-GROUP ANOVA FOR THE PRE-MANIPULATION RESTING STATE SCANS
@@ -163,7 +201,6 @@ anovaPreOutput = anovaPreOutput(:,[1 2 6 4 3 5]);
 tableAnovaPre = array2table(anovaPreOutput, 'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
 
 
-
 %%             SYNTAX FOR PERFORMING A MANOVA
 %              START BY CREATING A VECTOR REPRESENTING ALL THE GROUPS
 gp1 = ones(length(i1),1);
@@ -175,7 +212,6 @@ groups = setlabels(groups,{'HC','CLBP','FM'});    % SET THE VARIABLE LABELS
 prePain123 = cat(1,prePainHC, prePainCLBP,prePainFM);  % CREATE ANOTHER VECTOR TO INCLUDE
 %              RUN THE MANOVA
 [d,p,stats] = manova1(prePain123,groups)
-
 
 
 %%           ANALYSIS #1 (3 GROUP ANOVA FOR POST COLLAPSED ACROSS CONDITIONS)
@@ -393,11 +429,6 @@ writetable(tableTtest,'t-tests.txt','Delimiter',' ');
 %%         SAVE WORKSPACE
 ROIFCstatsOutput = ['ROIFCstats_',datestr(now, 'dd-mm-yyyy'),'.mat']
 save(ROIFCstatsOutput);
-
-
-
-
-
 
 % %   Below = (HC, pre, neg vs. CLBP, pre, pos)
 % [h, p, ci, stats] = ttest2(painnet(i1, 1, 1), painnet(i2, 1, 1), ...
