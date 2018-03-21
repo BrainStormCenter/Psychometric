@@ -8,16 +8,18 @@ The scripts should be run in the following order
 4. JC_FCpreproSetup -> JC_FCprepro
 5. JC_FCCalcSetup -> JC_FCcalc
 6. JC_ROIFCcalc
-7. JC_3DMC.m
-8. JC_rext_plot.m
+7. JC_ROIFCstats
+8. JC_3DMC.m
+9. JC_rext_plot.m
 
 The difference between JC_FCcalc and JC_ROIFCcalc:
 * JC_FCcalc correlates a ROI to the whole brain
 * JC_ROIFCcalc correlates ROI to ROI
-Script #4 will call the JC_FCprepro function
-Script #5 will call the JC_FCcalc function
-Script #7 is used for quality control. This script goes through each subject's motion correction files and identifies outliers and writes them to a file for inspection.
-Script #8 does...        
+
+Script #4 will call the JC_FCprepro function </br>
+Script #5 will call the JC_FCcalc function </br>
+Script #7 is used for quality control. This script goes through each subject's motion correction files and identifies outliers and writes them to a file for inspection. </br>
+Script #8 does...
 
 
 A new script will be added in the near future that will provide information about data quality and motion correction estimates.
@@ -89,9 +91,16 @@ spm_filter, and others.
 The function will make a copy of (each of) the input file(s) with a
 prefix of "fc" (e.g. "fcswraRUN.nii").
 
-6. JC_ROIFCcalc
+##    JC_ROIFCcalc (script 6)
+
+
+##    JC_ROIFCstats (scripts 7)
+USAGE:			TESTING ROI CORRELATIONS ACROSS GROUPS
+
+
+
 7. JC_3DMC.m
 7. JC_rext_plot.m
 
-##    JC_3DMC.m (script 7)
+##    JC_3DMC.m (script ?)
 USAGE:  This script gathers information about the motion correction estimates and then writes out the results to files.
