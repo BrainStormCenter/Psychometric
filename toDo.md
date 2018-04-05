@@ -1,6 +1,12 @@
 # To do list for the Psychometric grant
+
+April 5, 2018
+* Trying to figure out how to run an ANCOVA with behavioral data
+* 
+
+
 February 14, 2018
-* demo for lab 
+* demo for lab
 
 February 12, 2018
 * Determine how to include a covariate in the ANOVA analyses in the JC_ROIFCstats.m file
