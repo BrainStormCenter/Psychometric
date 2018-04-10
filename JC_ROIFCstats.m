@@ -427,7 +427,7 @@ tableTtest = table(Gps,scanSet,cond,Hy,pval,tVal,'VariableNames',{'group','scanS
 writetable(tableTtest,'t-tests.txt','Delimiter',' ');
 
 %%         SAVE WORKSPACE
-ROIFCstatsOutput = ['ROIFCstats_',datestr(now, 'dd-mm-yyyy'),'.mat']
+ROIFCstatsOutput = ['ROIFCstats_',datestr(now, 'yyyy-mm-dd'),'.mat']
 save(ROIFCstatsOutput);
 
 % %   Below = (HC, pre, neg vs. CLBP, pre, pos)

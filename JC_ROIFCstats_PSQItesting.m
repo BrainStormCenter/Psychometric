@@ -13,6 +13,7 @@
 %         MODIFIED ON:	 2018_02_13
 %    	MODIFIED ON:	 2018_03_20
 %    	MODIFIED ON:	 2018_04_05
+%    	MODIFIED ON:	 2018_04_10
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
@@ -42,10 +43,14 @@ both = find(~cellfun('isempty', regexpi(voinames, '^Both')));
 voiorder = [pain; dmn; both];
 nvs = numel(voiorder);
 
+%         COMBINE BEHAVIORAL AND DEMOGRAPHIC DATA
+slistdORIG = slistd;          % PRESERVE ORIGINAL DATA
+slistd = [slistd,struct2array(psqiStruct)];       % ADD BEHAVIORAL DATA
+
 % find subjects in three groups
-g1 = find(slistd(:, 3) == 1 & ~any(isnan(slistd(:, 4:11)), 2));
-g2 = find(slistd(:, 3) == 2 & ~any(isnan(slistd(:, 4:11)), 2));
-g3 = find(slistd(:, 3) == 3 & ~any(isnan(slistd(:, 4:11)), 2));
+g1 = find(slistd(:, 3) == 1 & ~any(isnan(slistd(:, 4:24)), 2));
+g2 = find(slistd(:, 3) == 2 & ~any(isnan(slistd(:, 4:24)), 2));
+g3 = find(slistd(:, 3) == 3 & ~any(isnan(slistd(:, 4:24)), 2));
 g123 = [g1; g2; g3];
 i1 = 1:numel(g1);
 i2 = i1(end) + (1:numel(g2));
@@ -107,6 +112,11 @@ painnet = squeeze(sum(sum(painzgfcccs, 1), 2)) ./ (length(pain) * (length(pain) 
 %   THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE DMN REGIONS
 dmnnet = squeeze(sum(sum(dmnzgfcccs, 1), 2)) ./ (length(dmn) * (length(dmn) -1));
 %
+%
+%%
+%              CREATE MATRIX OF PAIN CC'S AND BEHAVIORAL DATA
+%              RESHAPE THE PAINNET CC'S, COLUMNS 1&2=PRE/POST; COLUMNS 3&4=NEG/POS
+sub_by_painCCs = [painnet(:,1:2,1),painnet(:,1:2,2)];
 %%
 %   THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE 16 PAIN REGIONS
 %painnet = squeeze(sum(sum(painzgfcccs, 1), 2)) ./ (16 * 15);
@@ -129,40 +139,40 @@ bothnames = char(voinames(voiorder(bothstart:bothend)));
 %painnames = char(voinames(voiorder(1:16)));
 %dmnnames = char(voinames(voiorder(17:22)));
 
-% computing the ANOVA for all pairs
-pain_anovaresults_effect = zeros(length(pain),length(pain));
-pain_anovaresults_pvalue = zeros(length(pain),length(pain));
-%pain_anovaresults_effect = zeros(16, 16);
-%pain_anovaresults_pvalue = zeros(16, 16);
-% for node1 = 1:16
-%     for node2 = 1:16
-for node1 = 1:length(pain)
-     for node2 = 1:length(pain)
-        prePainHC = mean(squeeze(painzgfcccs(node1, node2, i1, 1, :)), 2);
-        prePainCLBP = mean(squeeze(painzgfcccs(node1, node2, i2, 1, :)), 2);
-        prePainFM = mean(squeeze(painzgfcccs(node1, node2, i3, 1, :)), 2);
-%
-%         % place the code between lines 116 and 131 here
-        gpNames = {'HC','CLBP','FM'};               % VARIABLE OF GROUP NAMES
-%       STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
-%       THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
-%       IDENTIFY THE LARGEST GROUP
-        A = max([length(i1),length(i2),length(i3)]);
-        A = zeros(A,3);    % INITIALIZE ARRAY OF ALL ZEROS  FOR LARGEST GROUP
-        A(A == 0) = NaN;    % CONVERT ALL '0' TO 'NaN' (MISSING VALUES)
-        A(1:length(prePainHC),1) = prePainHC;       % HC TO COLUMN 1
-        A(1:length(prePainCLBP),2) = prePainCLBP;   % CLBP TO COLUMN 2
-        A(1:length(prePainFM),3) = prePainFM;       % FM TO COLUMN 3
-%       STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
-%       CREATE A TABLE OF OVERALL F-TEST
-        [p,tbl,stats] = anova1(A,gpNames, 'off');      % TABLE OF OVERALL RESULTS
-%         ftestNames = tbl(1,:);                  % VARIABLE NAMES FOR THE TABLE
-%         ftestNames{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
-%         tableFtest = array2table(tbl(2:4,:),'VariableNames',ftestNames);
-        % pain_anovaresults_effect(node1, node2) = SOME_VALUE;
-        pain_anovaresults_pvalue(node1, node2) = p;
-    end
-end
+% % computing the ANOVA for all pairs
+% pain_anovaresults_effect = zeros(length(pain),length(pain));
+% pain_anovaresults_pvalue = zeros(length(pain),length(pain));
+% %pain_anovaresults_effect = zeros(16, 16);
+% %pain_anovaresults_pvalue = zeros(16, 16);
+% % for node1 = 1:16
+% %     for node2 = 1:16
+% for node1 = 1:length(pain)
+%      for node2 = 1:length(pain)
+%         prePainHC = mean(squeeze(painzgfcccs(node1, node2, i1, 1, :)), 2);
+%         prePainCLBP = mean(squeeze(painzgfcccs(node1, node2, i2, 1, :)), 2);
+%         prePainFM = mean(squeeze(painzgfcccs(node1, node2, i3, 1, :)), 2);
+% %
+% %         % place the code between lines 116 and 131 here
+%         gpNames = {'HC','CLBP','FM'};               % VARIABLE OF GROUP NAMES
+% %       STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
+% %       THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
+% %       IDENTIFY THE LARGEST GROUP
+%         A = max([length(i1),length(i2),length(i3)]);
+%         A = zeros(A,3);    % INITIALIZE ARRAY OF ALL ZEROS  FOR LARGEST GROUP
+%         A(A == 0) = NaN;    % CONVERT ALL '0' TO 'NaN' (MISSING VALUES)
+%         A(1:length(prePainHC),1) = prePainHC;       % HC TO COLUMN 1
+%         A(1:length(prePainCLBP),2) = prePainCLBP;   % CLBP TO COLUMN 2
+%         A(1:length(prePainFM),3) = prePainFM;       % FM TO COLUMN 3
+% %       STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
+% %       CREATE A TABLE OF OVERALL F-TEST
+%         [p,tbl,stats] = anova1(A,gpNames, 'off');      % TABLE OF OVERALL RESULTS
+% %         ftestNames = tbl(1,:);                  % VARIABLE NAMES FOR THE TABLE
+% %         ftestNames{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
+% %         tableFtest = array2table(tbl(2:4,:),'VariableNames',ftestNames);
+%         % pain_anovaresults_effect(node1, node2) = SOME_VALUE;
+%         pain_anovaresults_pvalue(node1, node2) = p;
+%     end
+% end
 
 
 %

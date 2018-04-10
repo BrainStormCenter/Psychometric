@@ -152,6 +152,7 @@ clear fcdata
 
 load '/Volumes/Data/Imaging/R01/preprocessed/slistd';
 
-FCvars = ['FCvars_',datestr(now, 'dd-mm-yyyy'),'.mat'];
+load '/Volumes/Data/Imaging/R01/preprocessed/psqiStruct.mat'
+%FCvars = ['FCvars_',datestr(now, 'dd-mm-yyyy'),'.mat'];
 
-save FCvars fc* slistd
+save FCvars fc* slistd psqiStruct
