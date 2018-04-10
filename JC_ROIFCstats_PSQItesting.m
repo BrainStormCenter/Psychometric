@@ -47,7 +47,7 @@ nvs = numel(voiorder);
 slistdORIG = slistd;          % PRESERVE ORIGINAL DATA
 slistd = [slistd,struct2array(psqiStruct)];       % ADD BEHAVIORAL DATA
 
-% find subjects in three groups
+% find subjects in three groups without missing data
 g1 = find(slistd(:, 3) == 1 & ~any(isnan(slistd(:, 4:24)), 2));
 g2 = find(slistd(:, 3) == 2 & ~any(isnan(slistd(:, 4:24)), 2));
 g3 = find(slistd(:, 3) == 3 & ~any(isnan(slistd(:, 4:24)), 2));
@@ -58,6 +58,10 @@ i3 = i2(end) + (1:numel(g3));
 ns = numel(g123);
 glistd = slistd(g123, :);
 rlistd = glistd(:, 4:11);
+rlistd2 = glistd(:,[1 4:11]); % KEEP SUBJECT NUMBERS
+
+
+
 
 % create cc arrays
 %   THESE ARE THE CROSS CORRELATIONS OF ALL THE BRAIN REGIONS LISTED IN THE VOI FILE
@@ -117,6 +121,8 @@ dmnnet = squeeze(sum(sum(dmnzgfcccs, 1), 2)) ./ (length(dmn) * (length(dmn) -1))
 %              CREATE MATRIX OF PAIN CC'S AND BEHAVIORAL DATA
 %              RESHAPE THE PAINNET CC'S, COLUMNS 1&2=PRE/POST; COLUMNS 3&4=NEG/POS
 sub_by_painCCs = [painnet(:,1:2,1),painnet(:,1:2,2)];
+psqiData = glistd(:,[1 12:24]);
+PSQIandPainCCs = [psqiData,sub_by_painCCs];
 %%
 %   THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE 16 PAIN REGIONS
 %painnet = squeeze(sum(sum(painzgfcccs, 1), 2)) ./ (16 * 15);
