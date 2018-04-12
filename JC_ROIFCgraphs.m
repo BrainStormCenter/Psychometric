@@ -2,6 +2,7 @@
 %
 %		CREATED BY:		JASON CRAGGS
 %		CREATED ON:		2018-01-25
+%    	MODIFIED ON:	 2018_04_12
 %
 %		USAGE:			TO CREATE GRAPHS OF RESULTS
 %
@@ -28,10 +29,10 @@ allmap2 = n.threshlutc(mean(mean(painzgfcccs( : , : , i2 , : , 1), 4), 3) + eps,
 
 
 
-%     GRAPHS FOR THE DMN NETWORK
-allmap3 = n.threshlutc(mean(mean(dmnzgfcccs( : , : , i1 , : , 1), 4), 3) + eps, llut);
-allmap4 = n.threshlutc(mean(mean(dmnzgfcccs( : , : , i2 , : , 1), 4), 3) + eps, llut);
-[h, p, ci, stats2] = ttest2(mean(dmnzgfcccs(: , : , i1, 1, :), 5), mean(dmnzgfcccs(: , : , i2, 1, :), 5), 'dim',3, 'tail', 'both', 'vartype', 'unequal');
+% %     GRAPHS FOR THE DMN NETWORK
+% allmap3 = n.threshlutc(mean(mean(dmnzgfcccs( : , : , i1 , : , 1), 4), 3) + eps, llut);
+% allmap4 = n.threshlutc(mean(mean(dmnzgfcccs( : , : , i2 , : , 1), 4), 3) + eps, llut);
+% [h, p, ci, stats2] = ttest2(mean(dmnzgfcccs(: , : , i1, 1, :), 5), mean(dmnzgfcccs(: , : , i2, 1, :), 5), 'dim',3, 'tail', 'both', 'vartype', 'unequal');
 
 
 %function createfigure(cdata1, cdata2, cdata3)

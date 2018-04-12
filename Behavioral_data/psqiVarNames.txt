@@ -1,1 +1,1 @@
-'WASO_min'	'TST_hrs'	'SleepEfficiency'	'psqi_Durat'	'psqi_Distb'	'psqi_Latency'	'psqi_DayDys'	'psqi_SE'	'psqi_BadSQual'	'psqi_Meds'	'PSQI_total'
+'ID' 'TiB_hrs' 'SoL_min' 'WASO_min'	'TST_hrs'	'SleepEfficiency'	'psqi_Durat'	'psqi_Distb'	'psqi_Latency'	'psqi_DayDys'	'psqi_SE'	'psqi_BadSQual'	'psqi_Meds'	'PSQI_total'
