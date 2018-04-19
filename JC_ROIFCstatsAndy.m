@@ -13,6 +13,7 @@
 %         MODIFIED ON:	 2018_02_13
 %    	MODIFIED ON:	 2018_03_20
 %    	MODIFIED ON:	 2018_04_12
+%	     MODIFIED ON:	 2018_04_19
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
@@ -122,10 +123,10 @@ sub_by_painCCs = [painnet(:,1:2,1),painnet(:,1:2,2)];
 psqiData = glistd(:,[1 12:24]);
 PSQIandPainCCs = [psqiData,sub_by_painCCs];
 %%
-%   THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE 16 PAIN REGIONS
-%painnet = squeeze(sum(sum(painzgfcccs, 1), 2)) ./ (16 * 15);
-%   THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE 6 DMN REGIONS
-%dmnnet = squeeze(sum(sum(dmnzgfcccs, 1), 2)) ./ (6 * 5);
+%    THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE 16 PAIN REGIONS
+%    painnet = squeeze(sum(sum(painzgfcccs, 1), 2)) ./ (16 * 15);
+%    THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE 6 DMN REGIONS
+%    dmnnet = squeeze(sum(sum(dmnzgfcccs, 1), 2)) ./ (6 * 5);
 
 % get left amygdala (region 2) to left anterior insula (region 8) from pain network
 %pain_lamyg_2_linsula = squeeze(painzgfcccs(2, 8, :, :, :));
@@ -151,17 +152,17 @@ pain_anovaresults_pvalue = zeros(length(pain),length(pain));
 
 
 
-%%           ANALYSIS #0 (3 GROUP ANOVA FOR PRE)
-%       COMPUTING 3-GROUP ANOVA FOR THE PRE-MANIPULATION RESTING STATE SCANS
-%       STEP 1 = CREATE VARIABLES OF THE MEAN CORRELATION OF ALL PAIN REGIONS
-%       FOR EACH GROUP OF THE PRE SCANS ACROSS BOTH VISITS
+%%        ANALYSIS #1 (3 GROUP ANOVA FOR PRE)
+%         COMPUTING 3-GROUP ANOVA FOR THE PRE-MANIPULATION RESTING STATE SCANS
+%              STEP 1 = CREATE VARIABLES OF THE MEAN CORRELATION OF ALL PAIN REGIONS
+%              FOR EACH GROUP OF THE PRE SCANS ACROSS BOTH VISITS
 prePainHC = mean(painnet(i1,1,:),3);        % MEAN OF HC
 prePainCLBP = mean(painnet(i2,1,:),3);      % MEAN OF CLBP
 prePainFM = mean(painnet(i3,1,:),3);        % MEAN OF FM
 gpNames = {'HC','CLBP','FM'};               % VARIABLE OF GROUP NAMES
-%       STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
-%       THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
-%       IDENTIFY THE LARGEST GROUP
+%              STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
+%              THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
+%              IDENTIFY THE LARGEST GROUP
 A = max([length(i1),length(i2),length(i3)]);
 A = zeros(A,3);    % INITIALIZE ARRAY OF ALL ZEROS  FOR LARGEST GROUP
 A(A == 0) = NaN;    % CONVERT ALL '0' TO 'NaN' (MISSING VALUES)
@@ -201,8 +202,8 @@ for node1 = 1:length(pain)
         prePainGps = mean(squeeze(painzgfcccs(node1, node2, i4, 1, :)), 2);
 %
 %         % place the code between lines 116 and 131 here
-        gpNames = {'HC','CLBP','FM'};               % VARIABLE OF GROUP NAMES
-        gpNames2 = {'HC','Pain'};               % VARIABLE OF GROUP NAMES
+        gpNames = {'HC','CLBP','FM'};           % VARIABLE: GROUP NAMES
+        gpNames2 = {'HC','Pain'};               % VARIABLE: GROUP NAMES COLLAPSED ACROSS CP GROUPS
 %       STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
 %       THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
 %       IDENTIFY THE LARGEST GROUP
