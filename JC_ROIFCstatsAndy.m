@@ -155,22 +155,22 @@ pain_anovaresults_pvalue = zeros(length(pain),length(pain));
 %%        ANALYSIS #1 (3 GROUP ANOVA FOR PRE)
 %         COMPUTING 3-GROUP ANOVA FOR THE PRE-MANIPULATION RESTING STATE SCANS
 %              STEP 1 = CREATE VARIABLES OF THE MEAN CORRELATION OF ALL PAIN REGIONS
-%              FOR EACH GROUP OF THE PRE SCANS ACROSS BOTH VISITS
+%                   FOR EACH GROUP OF THE PRE SCANS ACROSS BOTH VISITS
 prePainHC = mean(painnet(i1,1,:),3);        % MEAN OF HC
 prePainCLBP = mean(painnet(i2,1,:),3);      % MEAN OF CLBP
 prePainFM = mean(painnet(i3,1,:),3);        % MEAN OF FM
 gpNames = {'HC','CLBP','FM'};               % VARIABLE OF GROUP NAMES
 %              STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
-%              THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
-%              IDENTIFY THE LARGEST GROUP
+%                   THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
+%                   IDENTIFY THE LARGEST GROUP
 A = max([length(i1),length(i2),length(i3)]);
 A = zeros(A,3);    % INITIALIZE ARRAY OF ALL ZEROS  FOR LARGEST GROUP
 A(A == 0) = NaN;    % CONVERT ALL '0' TO 'NaN' (MISSING VALUES)
 A(1:length(prePainHC),1) = prePainHC;       % HC TO COLUMN 1
 A(1:length(prePainCLBP),2) = prePainCLBP;   % CLBP TO COLUMN 2
 A(1:length(prePainFM),3) = prePainFM;       % FM TO COLUMN 3
-%       STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
-%       CREATE A TABLE OF OVERALL F-TEST
+%              STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
+%                   CREATE A TABLE OF OVERALL F-TEST
 [p,tbl,stats] = anova1(A,gpNames);      % TABLE OF OVERALL RESULTS
 ftestNames = tbl(1,:);                  % VARIABLE NAMES FOR THE TABLE
 ftestNames{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
@@ -192,14 +192,14 @@ tableAnovaPre = array2table(anovaPreOutput, 'VariableNames',{'gp1','gp2', 'pval'
 
 
 
-
+%              T-TEST COMPARING GROUPS ON THE REGION-TO-REGION CROSS-CORRELATIONS
 %%
-for node1 = 1:length(pain)
-     for node2 = 1:length(pain)
+for node1 = 1:length(pain)         % PAIN REGION #1
+     for node2 = 1:length(pain)    % PAIN REGION #1
         prePainHC = mean(squeeze(painzgfcccs(node1, node2, i1, 1, :)), 2);
         % prePainCLBP = mean(squeeze(painzgfcccs(node1, node2, i2, 1, :)), 2);
         % prePainFM = mean(squeeze(painzgfcccs(node1, node2, i3, 1, :)), 2);
-        prePainGps = mean(squeeze(painzgfcccs(node1, node2, i4, 1, :)), 2);
+        prePainGps = mean(squeeze(painzgfcccs(node1, node2, i4, 1, :)), 2);     % VARIABLE: GROUP NAMES COLLAPSED ACROSS CP GROUPS
 %
 %         % place the code between lines 116 and 131 here
         gpNames = {'HC','CLBP','FM'};           % VARIABLE: GROUP NAMES
@@ -216,7 +216,7 @@ for node1 = 1:length(pain)
 %       STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
 %       CREATE A TABLE OF OVERALL F-TEST
         %[p,tbl,stats] = anova1(A,gpNames, 'off');      % TABLE OF OVERALL RESULTS
-        [H,P,CI,STATS] = ttest2(prePainHC,prePainGps);
+        [H,P,CI,STATS] = ttest2(prePainHC,prePainGps);           % 2 SAMPLE T-TEST
 %         ftestNames = tbl(1,:);                  % VARIABLE NAMES FOR THE TABLE
 %         ftestNames{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
 %         tableFtest = array2table(tbl(2:4,:),'VariableNames',ftestNames);
@@ -261,6 +261,8 @@ end
 
 OUT_TEXT
 %         NEGATIVE T-VALUES = CONTROL LESS THAN PAIN GROUP
+%         WRITE OUT THE SIGNIFICANT ROI-TO-ROI CORRELATION BETWEEN GROUPS
+dlmwrite('out_text.txt',OUT_TEXT,'')
 
 
 figure;
@@ -277,11 +279,11 @@ imagesc(pain_ttest_tval);colorbar;colormap('jet');
 % (but keeping this code in case need for later)
 % for each ROI-ROI correlation (Y) from above,
 %    Test if behavioral variable (X, i.e. a sleep variable) predicts Y
-psqiNames = {'ID','TiB_hrs', 'SoL_min','WASO_min','TST_hrs','SleepEfficiency','psqi_Durat','psqi_Distb','psqi_Latency','psqi_DayDys','psqi_SE','psqi_BadSQual','psqi_Meds','PSQI_total'}
+psqiNames = {'ID','TiB_hrs', 'SoL_min','WASO_min','TST_hrs','SleepEfficiency','psqi_Durat','psqi_Distb','psqi_Latency','psqi_DayDys','psqi_SE','psqi_BadSQual','psqi_Meds','PSQI_total'};
 for i=1:numel(I)
      node1=I(i);
      node2=J(i);
-     for behavior_index=14 %2:5%numel(psqiNames) % skip first column, which is ID
+     for behavior_index=3:5 %14 %2:5%numel(psqiNames) % skip first column, which is ID
           BEHAVIOR = psqiData(:,behavior_index);
           BEHAVIOR_label=psqiNames{behavior_index};
           X = [ones(size(BEHAVIOR)) BEHAVIOR];
@@ -308,15 +310,13 @@ for i=1:numel(I)
                text(xposition,yposition,['R^2 = ' sprintf('%0.3f',R2)])
           end
 
-          P_out(i,behavior_index) = STATS(3);
-          T_out(i,behavior_index) = sqrt(STATS(2))*sign(B(2));
-          B_out(i,behavior_index) = B(2);
+          Regress_P_out(i,behavior_index) = STATS(3);
+          Regress_T_out(i,behavior_index) = sqrt(STATS(2))*sign(B(2));
+          Regress_B_out(i,behavior_index) = B(2);
      end
 end
 
 
-%         WRITE OUT THE SIGNIFICANT ROI-TO-ROI CORRELATION BETWEEN GROUPS
-dlmwrite('out_text.txt',OUT_TEXT,'')
 
 
 
