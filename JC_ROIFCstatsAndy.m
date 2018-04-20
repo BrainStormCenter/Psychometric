@@ -235,6 +235,7 @@ for i = 1:24
      end
 end
 
+%         THESE IDENTIFY GROUP DIFFERENCES IN ROI-TO-ROI FUNCTIONAL CONNECTIVITY
 pid = FDR(pain_ttest_pval,.05);
 [I,J] = find(pain_ttest_pval <= pid);
 [I J];
@@ -280,46 +281,152 @@ imagesc(pain_ttest_tval);colorbar;colormap('jet');
 % for each ROI-ROI correlation (Y) from above,
 %    Test if behavioral variable (X, i.e. a sleep variable) predicts Y
 psqiNames = {'ID','TiB_hrs', 'SoL_min','WASO_min','TST_hrs','SleepEfficiency','psqi_Durat','psqi_Distb','psqi_Latency','psqi_DayDys','psqi_SE','psqi_BadSQual','psqi_Meds','PSQI_total'};
-for i=1:numel(I)
-     node1=I(i);
-     node2=J(i);
-     for behavior_index=3:5 %14 %2:5%numel(psqiNames) % skip first column, which is ID
-          BEHAVIOR = psqiData(:,behavior_index);
-          BEHAVIOR_label=psqiNames{behavior_index};
-          X = [ones(size(BEHAVIOR)) BEHAVIOR];
-          Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
-          [B,BINT,R,RINT,STATS] = regress(Y,X);
-          % B(1) is beta for constant term; B(2) is beta for behavioral
-          % STATS lists (1) R2, (2) F stat, (3) p-value, (4) error variance
-          % can estimate t-value as square-root of F-stat times sign of B(2) (+ or -)
+% for i=1:numel(I)
+%      node1=I(i);
+%      node2=J(i);
+%      for behavior_index=3:5 %14 %2:5%numel(psqiNames) % skip first column, which is ID
+%           BEHAVIOR = psqiData(:,behavior_index);
+%           BEHAVIOR_label=psqiNames{behavior_index};
+%           X = [ones(size(BEHAVIOR)) BEHAVIOR];
+%           Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
+%           [B,BINT,R,RINT,STATS] = regress(Y,X);
+%           % B(1) is beta for constant term; B(2) is beta for behavioral
+%           % STATS lists (1) R2, (2) F stat, (3) p-value, (4) error variance
+%           % can estimate t-value as square-root of F-stat times sign of B(2) (+ or -)
+%
+%           % scatterplot
+%           % if P<0.05 (uncorrected)
+%           %   scatterplot of relationship
+%           if STATS(3) < 0.05
+%                figure
+%                plot(X(:,2),Y,'k+');
+%                hold on
+%                l = lsline;
+%                set(l,'LineWidth',2)
+%                xlabel(psqiNames{behavior_index})
+%                ylabel(['RS-FC of ROI' num2str(node1) '-ROI' num2str(node2)])
+%                R2=STATS(1);
+%                xposition = max(X(:,2)) - 0.1*range(X(:,2));
+%                yposition = max(Y) - 0.1*range(Y);
+%                text(xposition,yposition,['R^2 = ' sprintf('%0.3f',R2)])
+%           end
+%
+%           Regress_P_out(i,behavior_index) = STATS(3);
+%           Regress_T_out(i,behavior_index) = sqrt(STATS(2))*sign(B(2));
+%           Regress_B_out(i,behavior_index) = B(2);
+%           % Note: in line 287, we are looping through variables 3-5
+%           % in line 317, we are assigning to columns 3-5
+%           % therefore, columns 1 and 2 will be empty (all zeros)
+%           %
+%           % You can change code so that line 316 assigns to (behavior_index-2), but this could cause problems later
+%           % Recommend keep as is
+%           %
+%           % So each row of Regress_B_out is a different ROI-to-ROI pairs
+%           % and each column corresponds to a variable in psqiData (if tested)
+%           % For example: we did not test variable #1 (subject ID), so this column is all zeros
+%
+%      end
+% end
 
-          % scatterplot
-          % if P<0.05 (uncorrected)
-          %   scatterplot of relationship
-          if STATS(3) < 0.05
-               figure
-               plot(X(:,2),Y,'k+');
-               hold on
-               l = lsline;
-               set(l,'LineWidth',2)
-               xlabel(psqiNames{behavior_index})
-               ylabel(['RS-FC of ROI' num2str(node1) '-ROI' num2str(node2)])
-               R2=STATS(1);
-               xposition = max(X(:,2)) - 0.1*range(X(:,2));
-               yposition = max(Y) - 0.1*range(Y);
-               text(xposition,yposition,['R^2 = ' sprintf('%0.3f',R2)])
-          end
 
-          Regress_P_out(i,behavior_index) = STATS(3);
-          Regress_T_out(i,behavior_index) = sqrt(STATS(2))*sign(B(2));
-          Regress_B_out(i,behavior_index) = B(2);
-     end
+%              RUNNING MULTIPLE LINERAR REGRESSION USING fitlm
+%
+%              DECALRE A STRUCT TO HOLD ALL THE RESULTS FROM THE fitlm LOOP
+LM = struct();
+for i=1:numel(I);
+     node1 = I(i);
+     node2 = J(i);
+     xVars = [psqiData(:, 3:5)];
+     Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
+     LM.(strcat('lm', num2str(i))) = fitlm(xVars,Y);
 end
 
 
+% X2 = [psqiData(:, 3:5)];
+% lm= fitlm(X2,Y);
+% lm
+
+% Linear regression model:
+%     y ~ 1 + x1 + x2 + x3
+%
+% Estimated Coefficients:
+%                     Estimate          SE         tStat     pValue
+%                    ___________    __________    _______    _______
+%
+%     (Intercept)       -0.09716       0.12003    -0.8095    0.42049
+%     x1              0.00039373    0.00085143    0.46244    0.64495
+%     x2             -0.00031876    0.00029569     -1.078    0.28407
+%     x3                0.013969      0.015571    0.89715    0.37217
+%
+%
+% Number of observations: 89, Error degrees of freedom: 85
+% Root Mean Squared Error: 0.145
+% R-squared: 0.0378,  Adjusted R-Squared 0.00388
+% F-statistic vs. constant model: 1.11, p-value = 0.348
+
+% AJ: Consider running stepwise REGRESSION
+% [BB,SE,PVAL,INCLUDE,NEXTSTEP,HISTORY]=stepwisefit(X,Y);
+% NOTE:  stepwise fit automatically adds a constant column of ones;
+%  (so you don't have to...)
 
 
+% If you want to test relationship only in group 1
+%     i1 = group 1 SUBJECTS
+% X = [ones(size(BEHAVIOR)) BEHAVIOR];
+% Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
+% X = X(i1,:)
+% Y = Y(i1,:)
 
+% for i=1:numel(I)
+%      node1=I(i);
+%      node2=J(i);
+%      for behavior_index=3:5 %14 %2:5%numel(psqiNames) % skip first column, which is ID
+%           BEHAVIOR = psqiData(:,behavior_index);
+%           BEHAVIOR_label=psqiNames{behavior_index};
+%           X = [ones(size(BEHAVIOR)) BEHAVIOR];
+%           Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
+%            X3 = X(i4,:);        % REGRESSION FOR ONLY GROUP 2
+%            Y3 = Y(i4,:);        % REGRESSION FOR ONLY GROUP 2
+%           % X3 = X;
+%           % Y3 = Y;
+%           [B3,BINT3,R3,RINT3,STATS3] = regress(Y3,X3);
+%           % B(1) is beta for constant term; B(2) is beta for behavioral
+%           % STATS lists (1) R2, (2) F stat, (3) p-value, (4) error variance
+%           % can estimate t-value as square-root of F-stat times sign of B(2) (+ or -)
+%
+%           % scatterplot
+%           % if P<0.05 (uncorrected)
+%           %   scatterplot of relationship
+%           if STATS3(3) < 0.05
+%                figure
+%                plot(X3(:,2),Y3,'k+');
+%                hold on
+%                l = lsline;
+%                set(l,'LineWidth',2)
+%                xlabel(psqiNames{behavior_index})
+%                ylabel(['RS-FC of ROI' num2str(node1) '-ROI' num2str(node2)])
+%                R2=STATS3(1);
+%                xposition = max(X3(:,2)) - 0.1*range(X3(:,2));
+%                yposition = max(Y3) - 0.1*range(Y3);
+%                text(xposition,yposition,['R^2 = ' sprintf('%0.3f',R2)])
+%           end
+%
+%           Regress_P_out3(i,behavior_index) = STATS3(3);
+%           Regress_T_out3(i,behavior_index) = sqrt(STATS3(2))*sign(B3(2));
+%           Regress_B_out3(i,behavior_index) = B3(2);
+%           % Note: in line 287, we are looping through variables 3-5
+%           % in line 317, we are assigning to columns 3-5
+%           % therefore, columns 1 and 2 will be empty (all zeros)
+%           %
+%           % You can change code so that line 316 assigns to (behavior_index-2), but this could cause problems later
+%           % Recommend keep as is
+%           %
+%           % So each row of Regress_B_out is a different ROI-to-ROI pairs
+%           % and each column corresponds to a variable in psqiData (if tested)
+%           % For example: we did not test variable #1 (subject ID), so this column is all zeros
+%
+%      end
+% end
 
 
 % Method B:  multiple linear regression
