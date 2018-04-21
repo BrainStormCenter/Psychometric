@@ -14,6 +14,7 @@
 %    	MODIFIED ON:	 2018_03_20
 %    	MODIFIED ON:	 2018_04_12
 %	     MODIFIED ON:	 2018_04_19
+%       	MODIFIED ON:	 2018_04_20
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
@@ -121,6 +122,8 @@ dmnnet = squeeze(sum(sum(dmnzgfcccs, 1), 2)) ./ (length(dmn) * (length(dmn) -1))
 %              RESHAPE THE PAINNET CC'S, COLUMNS 1&2=PRE/POST; COLUMNS 3&4=NEG/POS
 sub_by_painCCs = [painnet(:,1:2,1),painnet(:,1:2,2)];
 psqiData = glistd(:,[1 12:24]);
+psqiNames = {'ID','TiB_hrs', 'SoL_min','WASO_min','TST_hrs','SleepEfficiency','psqi_Durat','psqi_Distb','psqi_Latency','psqi_DayDys','psqi_SE','psqi_BadSQual','psqi_Meds','PSQI_total'};
+
 PSQIandPainCCs = [psqiData,sub_by_painCCs];
 %%
 %    THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE 16 PAIN REGIONS
@@ -230,8 +233,8 @@ end
 
 for i = 1:24
      for j=i+1:24
-          pain_ttest_pval(j,i)=NaN;
-          pain_ttest_tval(j,i)=NaN;
+          pain_ttest_pval(i,j)=NaN;
+          pain_ttest_tval(i,j)=NaN;
      end
 end
 
@@ -264,7 +267,11 @@ OUT_TEXT
 %         NEGATIVE T-VALUES = CONTROL LESS THAN PAIN GROUP
 %         WRITE OUT THE SIGNIFICANT ROI-TO-ROI CORRELATION BETWEEN GROUPS
 dlmwrite('out_text.txt',OUT_TEXT,'')
-
+whenRun = datestr(now, 'yyyy-mm-dd_HHMM');
+% file_id1 = fopen([rootpath 'GpFCdiffs_',datestr(now, 'yyyy-mm-dd_HH:MM'),'.txt'], 'w');
+file_id1 = fopen([rootpath 'GpFCdiffs_', whenRun,'.txt'], 'w');
+fprintf(file_id1, OUT_TEXT,'');
+fclose(file_id1);
 
 figure;
 imagesc(pain_ttest_tval);colorbar;colormap('jet');
@@ -280,7 +287,7 @@ imagesc(pain_ttest_tval);colorbar;colormap('jet');
 % (but keeping this code in case need for later)
 % for each ROI-ROI correlation (Y) from above,
 %    Test if behavioral variable (X, i.e. a sleep variable) predicts Y
-psqiNames = {'ID','TiB_hrs', 'SoL_min','WASO_min','TST_hrs','SleepEfficiency','psqi_Durat','psqi_Distb','psqi_Latency','psqi_DayDys','psqi_SE','psqi_BadSQual','psqi_Meds','PSQI_total'};
+
 % for i=1:numel(I)
 %      node1=I(i);
 %      node2=J(i);
@@ -329,17 +336,64 @@ psqiNames = {'ID','TiB_hrs', 'SoL_min','WASO_min','TST_hrs','SleepEfficiency','p
 % end
 
 
-%              RUNNING MULTIPLE LINERAR REGRESSION USING fitlm
+% psqiPlusRoiNames = [psqiNames, 'Y'];
+
+%              RUNNING MULTIPLE LINERAR REGRESSION USING fitlm (WITH A TABLE)
+%
+%              DECALRE A STRUCT TO HOLD ALL THE RESULTS FROM THE fitlm LOOP
+% LM1 = struct();
+% for i=1:numel(I);
+%      node1 = I(i);
+%      node2 = J(i);
+%      Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
+%      psqiPlusROI = [psqiData, Y];
+%      tablePsqiPlusROI = array2table(psqiPlusROI, 'VariableNames',psqiPlusRoiNames);
+%      LM1.(strcat('lm', num2str(i))) = fitlm(tablePsqiPlusROI, 'Y~TiB_hrs+SoL_min+WASO_min');
+% end
+%
+% % %         OUTPUT THE OVERALL F AND P-VALUES FOR EACH MODEL
+% for i=1:numel(I);
+% lm1Model = anova(LM1.(strcat('lm', num2str(i))), 'summary');
+% lm1modelSummary(i, :) = lm1Model(2,4:5);
+% end
+% %         IDENTIFY SIGNIGCANT MODELS
+% lm1modelSummary.sig = [lm1modelSummary.pValue < 0.05];
+%
+
+
+%              RUNNING A STEPWISE REGRESSION USING stepwiselm (WITH A TABLE)
+
+
+
+
+
+
+%              RUNNING MULTIPLE LINERAR REGRESSION USING fitlm (WITHOUT A TABLE)
 %
 %              DECALRE A STRUCT TO HOLD ALL THE RESULTS FROM THE fitlm LOOP
 LM = struct();
-for i=1:numel(I);
+for i=1%:numel(I);
      node1 = I(i);
      node2 = J(i);
      xVars = [psqiData(:, 3:5)];
      Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
      LM.(strcat('lm', num2str(i))) = fitlm(xVars,Y);
 end
+
+
+%         OUTPUT THE OVERALL F AND P-VALUES FOR EACH MODEL
+for i=1%:numel(I);
+ztbl2 = anova(LM.(strcat('lm', num2str(i))), 'summary');
+modelSummary(i, :) = ztbl2(2,4:5);
+end
+
+
+% zlm = fitlm(tablePsqiPlusROI, 'Y~TiB_hrs+SoL_min+WASO_min')
+
+% tablePSQI = array2table(psqiData, 'VariableNames',psqiNames)
+
+
+
 
 
 % X2 = [psqiData(:, 3:5)];
