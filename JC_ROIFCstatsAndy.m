@@ -43,6 +43,16 @@ both = find(~cellfun('isempty', regexpi(voinames, '^Both')));
 voiorder = [pain; dmn; both];
 nvs = numel(voiorder);
 
+%         LIST OUT THE BRAIN REGIONS IN THE PAIN AND DMN NETWORKS
+char(voinames(voiorder));
+painnames = char(voinames(voiorder(painstart:painend)));
+dmnnames = char(voinames(voiorder(dmnstart:dmnend)));
+bothnames = char(voinames(voiorder(bothstart:bothend)));
+%painnames = char(voinames(voiorder(1:16)));
+%dmnnames = char(voinames(voiorder(17:22)));
+
+
+
 %         COMBINE BEHAVIORAL AND DEMOGRAPHIC DATA
 slistdORIG = slistd;          % PRESERVE ORIGINAL DATA
 slistd = [slistd,struct2array(psqiStruct)];       % ADD BEHAVIORAL DATA
@@ -139,13 +149,6 @@ PSQIandPainCCs = [psqiData,sub_by_painCCs];
 % - the next ", 1" is the "pre" (treatment) selection
 % - the next ", 1" is the "neg session" selection
 %
-%           LIST OUT THE BRAIN REGIONS IN THE PAIN AND DMN NETWORKS
-char(voinames(voiorder));
-painnames = char(voinames(voiorder(painstart:painend)));
-dmnnames = char(voinames(voiorder(dmnstart:dmnend)));
-bothnames = char(voinames(voiorder(bothstart:bothend)));
-%painnames = char(voinames(voiorder(1:16)));
-%dmnnames = char(voinames(voiorder(17:22)));
 
 % computing the ANOVA for all pairs
 pain_anovaresults_effect = zeros(length(pain),length(pain));
