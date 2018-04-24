@@ -4,7 +4,7 @@
 %		CREATED BY:		JOCHEN WEBER
 %		CREATED ON:		2017-12-13
 %
-%		USAGE:			TESTING ROI CORRELATIONS ACROSS GROUPS
+%		USAGE:			TESTING PAIN ROI CORRELATIONS ACROSS GROUPS
 %
 %    	MODIFIED ON:	 2017_12_13
 %         MODIFIED ON:	  2018_02_01
@@ -12,6 +12,7 @@
 %         MODIFIED ON:	  2018_02_12
 %         MODIFIED ON:	 2018_02_13
 %    	MODIFIED ON:	 2018_03_20
+%    	MODIFIED ON:	 2018_04_24
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
@@ -215,16 +216,16 @@ prePain123 = cat(1,prePainHC, prePainCLBP,prePainFM);  % CREATE ANOTHER VECTOR T
 
 
 %%           ANALYSIS #1 (3 GROUP ANOVA FOR POST COLLAPSED ACROSS CONDITIONS)
-%       COMPUTING 3-GROUP ANOVA FOR THE PRE-MANIPULATION RESTING STATE SCANS
+%              COMPUTING 3-GROUP ANOVA FOR THE POST-MANIPULATION RESTING STATE SCANS
 %       STEP 1 = CREATE VARIABLES OF THE MEAN CORRELATION OF ALL PAIN REGIONS
-%       FOR EACH GROUP OF THE PRE SCANS ACROSS BOTH VISITS
+%         FOR EACH GROUP OF THE POST SCANS ACROSS BOTH VISITS
 postPainHC = mean(painnet(i1,2,:),3);        % MEAN OF HC
 postPainCLBP = mean(painnet(i2,2,:),3);      % MEAN OF CLBP
 postPainFM = mean(painnet(i3,2,:),3);        % MEAN OF FM
 gpNames = {'HC post','CLBP post','FM post'};               % VARIABLE OF GROUP NAMES
 %       STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
-%       THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
-%       IDENTIFY THE LARGEST GROUP
+%         THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
+%         IDENTIFY THE LARGEST GROUP
 A = max([length(i1),length(i2),length(i3)]);
 A = zeros(A,3);    % INITIALIZE ARRAY OF ALL ZEROS  FOR LARGEST GROUP
 A(A == 0) = NaN;    % CONVERT ALL '0' TO 'NaN' (MISSING VALUES)
@@ -232,7 +233,7 @@ A(1:length(postPainHC),1) = postPainHC;       % HC TO COLUMN 1
 A(1:length(postPainCLBP),2) = postPainCLBP;   % CLBP TO COLUMN 2
 A(1:length(postPainFM),3) = postPainFM;       % FM TO COLUMN 3
 %       STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
-%       CREATE A TABLE OF OVERALL F-TEST
+%         CREATE A TABLE OF OVERALL F-TEST
 [p,tbl,stats] = anova1(A,gpNames,'off');      % TABLE OF OVERALL RESULTS
 ftestNames = tbl(1,:);                  % VARIABLE NAMES FOR THE TABLE
 ftestNames{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
@@ -427,8 +428,8 @@ tableTtest = table(Gps,scanSet,cond,Hy,pval,tVal,'VariableNames',{'group','scanS
 writetable(tableTtest,'t-tests.txt','Delimiter',' ');
 
 %%         SAVE WORKSPACE
-ROIFCstatsOutput = ['ROIFCstats_',datestr(now, 'yyyy-mm-dd'),'.mat']
-save(ROIFCstatsOutput);
+PainROIFCstatsOutput = ['PainROIFCstats_',datestr(now, 'yyyy-mm-dd'),'.mat']
+save(PainROIFCstatsOutput);
 
 % %   Below = (HC, pre, neg vs. CLBP, pre, pos)
 % [h, p, ci, stats] = ttest2(painnet(i1, 1, 1), painnet(i2, 1, 1), ...
