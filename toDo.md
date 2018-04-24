@@ -1,8 +1,13 @@
 # To do list for the Psychometric grant
 
+April 24, 2018
+* what is the cross correlation of the pain and DMN regions
+* examine the level of activation among the significant pain regions
+
+
 April 5, 2018
 * Trying to figure out how to run an ANCOVA with behavioral data
-* 
+*
 
 
 February 14, 2018
