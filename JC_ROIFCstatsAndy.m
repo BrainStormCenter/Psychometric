@@ -239,18 +239,25 @@ pid = FDR(pain_ttest_pval,.05);
 OUT_TEXT = [];
 % Now, add strings to that OUT_TEXT
 % and you can use the "sprintf" command for syntax like tabs, line breaks
-
+painnames3 = char(painnames2);
 OUT_TEXT = [OUT_TEXT 'These ROIs correlations differ between groups:' sprintf('\t') sprintf('\n')];
 for i=1:numel(I)
+     pairNum = num2str(i);
      roi1num = num2str(I(i));
-     roi1str = painnames2(I(i),:);
+     roi1str = painnames3(I(i),:);
      roi2num = num2str(J(i));
-     roi2str = painnames2(J(i),:);
+     roi2str = painnames3(J(i),:);
      PainROI_tval = pain_ttest_tval(I(i),J(i));
      PainROI_pval = pain_ttest_pval(I(i),J(i));
-     OUT_TEXT = [OUT_TEXT roi1str ' (#' roi1num ') with ' roi2str ' (#' roi2num ')' sprintf('\t') ...
-      't-score: ' num2str(PainROI_tval) sprintf('\t') ' p-value: ' sprintf('%0.05f',PainROI_pval) ...
-      sprintf('\n') ];
+     % OUT_TEXT = [OUT_TEXT roi1str ' (#' roi1num ') with ' roi2str ' (#' roi2num ')' sprintf('\t') ...
+     %  't-score: ' num2str(PainROI_tval) sprintf('\t') ' p-value: ' sprintf('%0.05f',PainROI_pval) ...
+     %  sprintf('\n') ];
+      % OUT_TEXT = [OUT_TEXT roi1str '(#',roi1num,') with ',roi2str '(#', roi2num ')' ...
+      % 't-score: ' num2str(PainROI_tval) ' p-value: ' sprintf('%0.05f',PainROI_pval) ...
+      % sprintf('\n') ];
+      OUT_TEXT = [OUT_TEXT pairNum roi1str, '(#',roi1num,') with ',roi2str, ...
+      '(#', roi2num,')', 't-score: ' num2str(PainROI_tval), ' p-value: ' sprintf('%0.05f',PainROI_pval)...
+      sprintf('\n')]
 end
 
 OUT_TEXT
