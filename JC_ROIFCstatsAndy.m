@@ -6,16 +6,7 @@
 %
 %		USAGE:			TESTING ROI CORRELATIONS ACROSS GROUPS
 %
-%    	MODIFIED ON:	 2017_12_13
-%         MODIFIED ON:	  2018_02_01
-%         MODIFIED ON:	  2018_02_02
-%         MODIFIED ON:	  2018_02_12
-%         MODIFIED ON:	 2018_02_13
-%    	MODIFIED ON:	 2018_03_20
-%    	MODIFIED ON:	 2018_04_12
-%	     MODIFIED ON:	 2018_04_19
-%       	MODIFIED ON:	 2018_04_20
-%    	MODIFIED ON:	 2018_04_24
+%         LATEST MODIFICATION:     2018_04_25
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
@@ -32,7 +23,6 @@ cd(rootpath);
 load FCvars.mat
 
 % load VOI
-%voi = xff('Craggs_VOIs.voi');
 voi = xff('/Users/jcraggs/Documents/GitHub/Psychometric/ROIs/AALmasks1.voi');
 voinames = voi.VOINames;
 
@@ -57,8 +47,6 @@ char(voinames(voiorder));
 painnames = char(voinames(voiorder(painstart:painend)));
 dmnnames = char(voinames(voiorder(dmnstart:dmnend)));
 bothnames = char(voinames(voiorder(bothstart:bothend)));
-%painnames = char(voinames(voiorder(1:16)));
-%dmnnames = char(voinames(voiorder(17:22)));
 
 %         CLEANING UP ROI NAMES
 painnames2 = cellstr(painnames);  % CONVERT FROM CHAR TO CELL
@@ -68,13 +56,16 @@ dmnExpr = '([A-Z].+_)(rMNI_)([A-Za-z].+)(_)(roi.nii)';           % REGEX EXPRESS
 newROI = '$1$3'; % NEW ROI NAME BASED ON REGEX EXPRESSION ABOVE
 painnames2 = regexprep(painnames2, painExpr, newROI);
 dmnnames2 = regexprep(dmnnames2, dmnExpr, newROI);
-
+painnames3 = char(painnames2);
+dmnnames3 = char(dmnnames2);
 
 %         COMBINE BEHAVIORAL AND DEMOGRAPHIC DATA
+%         THIS NEEDS TO BE DONE BEFORE IDENTIFYING SUBJECTS BELOW
+%         TO AVOID MISSING DATA
 slistdORIG = slistd;                              % PRESERVE ORIGINAL DATA
 slistd = [slistd,struct2array(psqiStruct)];       % ADD BEHAVIORAL DATA
 
-% find subjects in three groups
+%         find subjects in three groups
 g1 = find(slistd(:, 3) == 1 & ~any(isnan(slistd(:, 4:24)), 2));
 g2 = find(slistd(:, 3) == 2 & ~any(isnan(slistd(:, 4:24)), 2));
 g3 = find(slistd(:, 3) == 3 & ~any(isnan(slistd(:, 4:24)), 2));
@@ -109,7 +100,6 @@ zgfcccs = squeeze(mean(zgfcccs, 4));
 %    3 subjects (in order of groups, 1-31 HC, 32-73 CLBP, 74-90 FM)
 %    4 pre/post treatment (1 pre, 2 post)
 %    5 neg/pos session (1 neg, 2 pos)
-
 %         to split into within network matrices
 %         THESE ARE ARRAYS OF CROSS CORRELATIONS AMONG REGIONS IN EACH NETWORK
 %         THE ARRAYS ARE ORGANIZED AS (REGIONS^REGIONS, ALL SUBJECTS, PRE & POST, POS & NEG)
@@ -126,7 +116,6 @@ painnet = squeeze(sum(sum(painzgfcccs, 1), 2)) ./ (length(pain) * (length(pain) 
 dmnnet = squeeze(sum(sum(dmnzgfcccs, 1), 2)) ./ (length(dmn) * (length(dmn) -1));
 %
 %
-%
 %              CREATE MATRIX OF PAIN CC'S AND BEHAVIORAL DATA
 %              RESHAPE THE PAINNET CC'S, COLUMNS 1&2=PRE/POST; COLUMNS 3&4=NEG/POS
 sub_by_painCCs = [painnet(:,1:2,1),painnet(:,1:2,2)];
@@ -137,11 +126,11 @@ psqiNames = {'ID','TiB_hrs', 'SoL_min','WASO_min','TST_hrs','SleepEfficiency','p
 PSQIandPainCCs = [psqiData,sub_by_painCCs];
 
 %         to unpack:
-%         - i1 and i2 are the indices for groups HC and CLBP
+%         - i1 and i2 and i3 are the indices for groups HC and CLBP and FM
 %         - the next ", 1" is the "pre" (treatment) selection
 %         - the next ", 1" is the "neg session" selection
 %
-%         computing the ANOVA for all pairs
+%         COMPUTING THE ANOVA FOR ALL PAIRS OF PAIN ROIS
 pain_anovaresults_effect = zeros(length(pain),length(pain));
 pain_anovaresults_pvalue = zeros(length(pain),length(pain));
 
@@ -239,7 +228,7 @@ pid = FDR(pain_ttest_pval,.05);
 OUT_TEXT = [];
 % Now, add strings to that OUT_TEXT
 % and you can use the "sprintf" command for syntax like tabs, line breaks
-painnames3 = char(painnames2);
+
 OUT_TEXT = [OUT_TEXT 'These ROIs correlations differ between groups:' sprintf('\t') sprintf('\n')];
 for i=1:numel(I)
      pairNum = num2str(i);
