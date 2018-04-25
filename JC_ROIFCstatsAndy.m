@@ -138,9 +138,9 @@ pain_anovaresults_pvalue = zeros(length(pain),length(pain));
 %         COMPUTING 3-GROUP ANOVA FOR THE PRE-MANIPULATION RESTING STATE SCANS
 %              STEP 1 = CREATE VARIABLES OF THE MEAN CORRELATION OF ALL PAIN REGIONS
 %                   FOR EACH GROUP OF THE PRE SCANS ACROSS BOTH VISITS
-prePainHC = mean(painnet(i1,1,:),3);        % MEAN OF HC
-prePainCLBP = mean(painnet(i2,1,:),3);      % MEAN OF CLBP
-prePainFM = mean(painnet(i3,1,:),3);        % MEAN OF FM
+HCPainPre = mean(painnet(i1,1,:),3);        % MEAN OF HC
+CLBPPainPre = mean(painnet(i2,1,:),3);      % MEAN OF CLBP
+FMPainPre = mean(painnet(i3,1,:),3);        % MEAN OF FM
 gpNames = {'HC','CLBP','FM'};               % VARIABLE OF GROUP NAMES
 %              STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
 %                   THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
@@ -148,34 +148,30 @@ gpNames = {'HC','CLBP','FM'};               % VARIABLE OF GROUP NAMES
 A = max([length(i1),length(i2),length(i3)]);
 A = zeros(A,3);    % INITIALIZE ARRAY OF ALL ZEROS  FOR LARGEST GROUP
 A(A == 0) = NaN;    % CONVERT ALL '0' TO 'NaN' (MISSING VALUES)
-A(1:length(prePainHC),1) = prePainHC;       % HC TO COLUMN 1
-A(1:length(prePainCLBP),2) = prePainCLBP;   % CLBP TO COLUMN 2
-A(1:length(prePainFM),3) = prePainFM;       % FM TO COLUMN 3
+A(1:length(HCPainPre),1) = HCPainPre;       % HC TO COLUMN 1
+A(1:length(CLBPPainPre),2) = CLBPPainPre;   % CLBP TO COLUMN 2
+A(1:length(FMPainPre),3) = FMPainPre;       % FM TO COLUMN 3
 %              STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
 %                   CREATE A TABLE OF OVERALL F-TEST
-[p,tbl,stats] = anova1(A,gpNames);      % TABLE OF OVERALL RESULTS
-ftestPainNames = tbl(1,:);                  % VARIABLE NAMES FOR THE TABLE
-ftestPainNames{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
-tableFtestPain = array2table(tbl(2:4,:),'VariableNames',ftestPainNames);
+[p_PainPre,tbl_PainPre,stats_PainPre] = anova1(A,gpNames);      % TABLE OF OVERALL RESULTS
+ftestNamesPain = tbl_PainPre(1,:);                  % VARIABLE NAMES FOR THE TABLE
+ftestNamesPain{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
+tableFtestPain = array2table(tbl_PainPre(2:4,:),'VariableNames',ftestNamesPain);
 figure;
 %[~,~,stats] = anova1(A,gpNames);        % I AM NOT SURE WHAT THIS DOES ...
-[c,~,~,gnames] = multcompare(stats);    % EVALUATE MULTIPLE COMPARISONS
+[c,~,~,gnames] = multcompare(stats_PainPre);    % EVALUATE MULTIPLE COMPARISONS
 %       STEP 4 = PREPARING STATS OUTPUT
 %       CREATE AN ARRAY OF ANOVA OUTPUT
-anovaPrePainOutput = [gnames(c(:,1)), gnames(c(:,2)), num2cell(c(:,3:6))];
+anovaOutputPainPre = [gnames(c(:,1)), gnames(c(:,2)), num2cell(c(:,3:6))];
 %       INITIAL ORDER OF OUTPUT FROM THE MULTICOMPARISON STEP
 %       COLUMNS 1-6 =  {'gp1','gp2','lCI','gpDiff','uCI','pval'}
 %       CHANGING THE VARIABLE ORDER IN THE OUTPUT ARRAY TO
 %       COLUMNS 1-6 = {'gp1','gp2', 'pval','gpDiff','lCI','uCI'}) AND THEN
 %       CREATE A TABLE OF THE MULTICOMPARISON OUTPUT
-anovaPrePainOutput = anovaPrePainOutput(:,[1 2 6 4 3 5]);
-tableAnovaPrePain = array2table(anovaPrePainOutput, 'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
-
-
-
-
+anovaOutputPainPre = anovaOutputPainPre(:,[1 2 6 4 3 5]);
+tableAnovaPainPre = array2table(anovaOutputPainPre, 'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
+%
 %              T-TEST COMPARING GROUPS ON THE REGION-TO-REGION CROSS-CORRELATIONS
-%%
 for node1 = 1:length(pain)         % PAIN REGION #1
      for node2 = 1:length(pain)    % PAIN REGION #1
         prePainHC = mean(squeeze(painzgfcccs(node1, node2, i1, 1, :)), 2);
@@ -198,70 +194,71 @@ for node1 = 1:length(pain)         % PAIN REGION #1
 %       STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
 %       CREATE A TABLE OF OVERALL F-TEST
         %[p,tbl,stats] = anova1(A,gpNames, 'off');      % TABLE OF OVERALL RESULTS
-        [H,P,CI,STATS] = ttest2(prePainHC,prePainGps);           % 2 SAMPLE T-TEST
+        [H_PainPre,P_PainPre,CI_PainPre,STATS_PainPre] = ttest2(prePainHC,prePainGps);           % 2 SAMPLE T-TEST
 %         ftestNames = tbl(1,:);                  % VARIABLE NAMES FOR THE TABLE
 %         ftestNames{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
 %         tableFtest = array2table(tbl(2:4,:),'VariableNames',ftestNames);
         % pain_anovaresults_effect(node1, node2) = cell2mat(tbl(2,5)); % THESE ARE F-VALUES
         % pain_anovaresults_pvalue(node1, node2) = p;
-        pain_ttest_tval(node1, node2) = STATS.tstat; % tstat
-        pain_ttest_pval(node1, node2) = P; % pvalue
+        ttest_tval_PainPre(node1, node2) = STATS_PainPre.tstat; % tstat
+        ttest_pval_PainPre(node1, node2) = P_PainPre; % pvalue
 
     end
 end
 
 for i = 1:24
      for j=i+1:24
-          pain_ttest_pval(i,j)=NaN;
-          pain_ttest_tval(i,j)=NaN;
+          ttest_pval_PainPre(i,j)=NaN;
+          ttest_tval_PainPre(i,j)=NaN;
      end
 end
 
 %         THESE IDENTIFY GROUP DIFFERENCES IN ROI-TO-ROI FUNCTIONAL CONNECTIVITY
-pid = FDR(pain_ttest_pval,.05);
-[I,J] = find(pain_ttest_pval <= pid);
+pid = FDR(ttest_pval_PainPre,.05);
+[I,J] = find(ttest_pval_PainPre <= pid);
 [I J];
 
 %% Fancy code to print-out RESULTS
 
 % first, create an empty array of character strings
-OUT_TEXT = [];
+OUT_Text_PainPre = [];
 % Now, add strings to that OUT_TEXT
 % and you can use the "sprintf" command for syntax like tabs, line breaks
 
-OUT_TEXT = [OUT_TEXT 'These ROIs correlations differ between groups:' sprintf('\t') sprintf('\n')];
+OUT_Text_PainPre = [OUT_Text_PainPre 'For the pain ROIs, pre mood manipulation, there are sig ' ...
+                    'group diffs in the CCs of these ROI-pairs:' sprintf('\t') ...
+                    sprintf('\n')];
 for i=1:numel(I)
      pairNum = num2str(i);
      roi1num = num2str(I(i));
      roi1str = painnames3(I(i),:);
      roi2num = num2str(J(i));
      roi2str = painnames3(J(i),:);
-     PainROI_tval = pain_ttest_tval(I(i),J(i));
-     PainROI_pval = pain_ttest_pval(I(i),J(i));
-     % OUT_TEXT = [OUT_TEXT roi1str ' (#' roi1num ') with ' roi2str ' (#' roi2num ')' sprintf('\t') ...
+     PainROI_tval = ttest_tval_PainPre(I(i),J(i));
+     PainROI_pval = ttest_pval_PainPre(I(i),J(i));
+     % OUT_Text_PainPre = [OUT_Text_PainPre roi1str ' (#' roi1num ') with ' roi2str ' (#' roi2num ')' sprintf('\t') ...
      %  't-score: ' num2str(PainROI_tval) sprintf('\t') ' p-value: ' sprintf('%0.05f',PainROI_pval) ...
      %  sprintf('\n') ];
-      % OUT_TEXT = [OUT_TEXT roi1str '(#',roi1num,') with ',roi2str '(#', roi2num ')' ...
+      % OUT_Text_PainPre = [OUT_Text_PainPre roi1str '(#',roi1num,') with ',roi2str '(#', roi2num ')' ...
       % 't-score: ' num2str(PainROI_tval) ' p-value: ' sprintf('%0.05f',PainROI_pval) ...
       % sprintf('\n') ];
-      OUT_TEXT = [OUT_TEXT pairNum roi1str, '(#',roi1num,') with ',roi2str, ...
-      '(#', roi2num,')', 't-score: ' num2str(PainROI_tval), ' p-value: ' sprintf('%0.05f',PainROI_pval)...
-      sprintf('\n')]
+      OUT_Text_PainPre = [OUT_Text_PainPre pairNum, '. ' roi1str, '(#',roi1num,') with ',roi2str, ...
+      '(#', roi2num,')', sprintf('\t'), 't-val: ', num2str(PainROI_tval), sprintf('\t'), 'p-val: ' ...
+      sprintf('%0.05f',PainROI_pval) sprintf('\n')]
 end
 
-OUT_TEXT
+OUT_Text_PainPre
 %         NEGATIVE T-VALUES = CONTROL LESS THAN PAIN GROUP
 %         WRITE OUT THE SIGNIFICANT ROI-TO-ROI CORRELATION BETWEEN GROUPS
-dlmwrite('PainRoiout_text.txt',OUT_TEXT,'')
+%dlmwrite('PainRoiTtest_PainPre.txt',OUT_Text_PainPre,'')
 whenRun = datestr(now, 'yyyy-mm-dd_HHMM');
 % file_id1 = fopen([rootpath 'GpFCdiffs_',datestr(now, 'yyyy-mm-dd_HH:MM'),'.txt'], 'w');
-% file_id1 = fopen([rootpath 'GpFCdiffs_', whenRun,'.txt'], 'w');
-%
-% fprintf(file_id1, OUT_TEXT,'');
-% fclose(file_id1);
+file_id1 = fopen([rootpath 'ROIttest_PainPre', whenRun,'.txt'], 'w');
+fprintf(file_id1, OUT_Text_PainPre,'');
+fclose(file_id1);
 
 figure;
-imagesc(pain_ttest_tval);colorbar;colormap('jet');
+imagesc(ttest_tval_PainPre);colorbar;colormap('jet');
 
 %% Now that we have identified ROI-ROI correlations that differ between groups
 %  We want to test what behavioral variables (if any) contribute to those differences in fxnl connectivity

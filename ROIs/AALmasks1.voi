@@ -4458,7 +4458,7 @@ NrOfVoxels:                 1770
 36           -30          22
 
 
-NameOfVOI:                  Both_rMNI_ParaHippocampal_L_roi.nii
+NameOfVOI:                  Both_rMNI_ParaHipp_L_roi.nii
 ColorOfVOI:                 193 190 100
 
 NrOfVoxels:                 978
@@ -5442,7 +5442,7 @@ NrOfVoxels:                 978
 -34          -46          -4
 
 
-NameOfVOI:                  Both_rMNI_ParaHippocampal_R_roi.nii
+NameOfVOI:                  Both_rMNI_ParaHipp_R_roi.nii
 ColorOfVOI:                 180 8 70
 
 NrOfVoxels:                 1132
@@ -61609,7 +61609,7 @@ NrOfVoxels:                 4056
 10           70           -2
 
 
-NameOfVOI:                  DMN_rMNI_Hippocampus_L_roi.nii
+NameOfVOI:                  DMN_rMNI_Hipp_L_roi.nii
 ColorOfVOI:                 34 222 148
 
 NrOfVoxels:                 932
@@ -62547,7 +62547,7 @@ NrOfVoxels:                 932
 -12          -40          10
 
 
-NameOfVOI:                  DMN_rMNI_Hippocampus_R_roi.nii
+NameOfVOI:                  DMN_rMNI_Hipp_R_roi.nii
 ColorOfVOI:                 218 159 89
 
 NrOfVoxels:                 946
@@ -100567,7 +100567,7 @@ NrOfVoxels:                 1770
 36           -30          22
 
 
-NameOfVOI:                  Pain_rMNI_ParaHippocampal_L_roi.nii
+NameOfVOI:                  Pain_rMNI_ParaHipp_L_roi.nii
 ColorOfVOI:                 30 75 81
 
 NrOfVoxels:                 978
@@ -101551,7 +101551,7 @@ NrOfVoxels:                 978
 -34          -46          -4
 
 
-NameOfVOI:                  Pain_rMNI_ParaHippocampal_R_roi.nii
+NameOfVOI:                  Pain_rMNI_ParaHipp_R_roi.nii
 ColorOfVOI:                 21 67 205
 
 NrOfVoxels:                 1132
@@ -113298,7 +113298,7 @@ NrOfVoxels:                 3265
 16           -38          0
 
 
-NameOfVOI:                  Pain_rMNI_Supp_Motor_Area_L_roi.nii
+NameOfVOI:                  Pain_rMNI_SMA_L_roi.nii
 ColorOfVOI:                 67 85 174
 
 NrOfVoxels:                 2147
@@ -115451,7 +115451,7 @@ NrOfVoxels:                 2147
 -12          -22          50
 
 
-NameOfVOI:                  Pain_rMNI_Supp_Motor_Area_R_roi.nii
+NameOfVOI:                  Pain_rMNI_SMA_R_roi.nii
 ColorOfVOI:                 27 167 126
 
 NrOfVoxels:                 2371

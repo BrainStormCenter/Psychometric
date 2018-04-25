@@ -138,9 +138,9 @@ Dmn_anovaresults_pvalue = zeros(length(dmn),length(dmn));
 %         COMPUTING 3-GROUP ANOVA FOR THE PRE-MANIPULATION RESTING STATE SCANS
 %              STEP 1 = CREATE VARIABLES OF THE MEAN CORRELATION OF ALL DMN REGIONS
 %                   FOR EACH GROUP OF THE PRE SCANS ACROSS BOTH VISITS
-preDmnHC = mean(dmnnet(i1,1,:),3);        % MEAN OF HC
-preDmnCLBP = mean(dmnnet(i2,1,:),3);      % MEAN OF CLBP
-preDmnFM = mean(dmnnet(i3,1,:),3);        % MEAN OF FM
+HC_DmnPre = mean(dmnnet(i1,1,:),3);        % MEAN OF HC
+CLBP_DmnPre = mean(dmnnet(i2,1,:),3);      % MEAN OF CLBP
+FM_DmnPre = mean(dmnnet(i3,1,:),3);        % MEAN OF FM
 gpNames = {'HC','CLBP','FM'};             % VARIABLE OF GROUP NAMES
 %              STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
 %                   THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
@@ -148,34 +148,34 @@ gpNames = {'HC','CLBP','FM'};             % VARIABLE OF GROUP NAMES
 A = max([length(i1),length(i2),length(i3)]);
 A = zeros(A,3);    % INITIALIZE ARRAY OF ALL ZEROS  FOR LARGEST GROUP
 A(A == 0) = NaN;    % CONVERT ALL '0' TO 'NaN' (MISSING VALUES)
-A(1:length(preDmnHC),1) = preDmnHC;       % HC TO COLUMN 1
-A(1:length(preDmnCLBP),2) = preDmnCLBP;   % CLBP TO COLUMN 2
-A(1:length(preDmnFM),3) = preDmnFM;       % FM TO COLUMN 3
+A(1:length(HC_DmnPre),1) = HC_DmnPre;       % HC TO COLUMN 1
+A(1:length(CLBP_DmnPre),2) = CLBP_DmnPre;   % CLBP TO COLUMN 2
+A(1:length(FM_DmnPre),3) = FM_DmnPre;       % FM TO COLUMN 3
 %              STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
 %                   CREATE A TABLE OF OVERALL F-TEST
-[pDmn,tblDmn,statsDmn] = anova1(A,gpNames);      % TABLE OF OVERALL RESULTS
-ftestNamesPreDmn = tblDmn(1,:);                  % VARIABLE NAMES FOR THE TABLE
+[pDmnPre,tblDmnPre,statsDmnPre] = anova1(A,gpNames);      % TABLE OF OVERALL RESULTS
+ftestNamesPreDmn = tblDmnPre(1,:);                  % VARIABLE NAMES FOR THE TABLE
 ftestNamesPreDmn{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
-tableFtestPreDmn = array2table(tblDmn(2:4,:),'VariableNames',ftestNamesPreDmn);
+tableFtestPreDmn = array2table(tblDmnPre(2:4,:),'VariableNames',ftestNamesPreDmn);
 figure;
 %[~,~,stats] = anova1(A,gpNames);        % I AM NOT SURE WHAT THIS DOES ...
-[c,~,~,gnames] = multcompare(statsDmn);    % EVALUATE MULTIPLE COMPARISONS
+[c,~,~,gnames] = multcompare(statsDmnPre);    % EVALUATE MULTIPLE COMPARISONS
 %              STEP 4 = PREPARING STATS OUTPUT
 %                   CREATE AN ARRAY OF ANOVA OUTPUT
-anovaOutputPreDmn = [gnames(c(:,1)), gnames(c(:,2)), num2cell(c(:,3:6))];
+anovaOutputDmnPre = [gnames(c(:,1)), gnames(c(:,2)), num2cell(c(:,3:6))];
 %              INITIAL ORDER OF OUTPUT FROM THE MULTICOMPARISON STEP
 %              COLUMNS 1-6 =  {'gp1','gp2','lCI','gpDiff','uCI','pval'}
 %              CHANGING THE VARIABLE ORDER IN THE OUTPUT ARRAY TO
 %              COLUMNS 1-6 = {'gp1','gp2', 'pval','gpDiff','lCI','uCI'}) AND THEN
 %              CREATE A TABLE OF THE MULTICOMPARISON OUTPUT
-anovaOutputPreDmn = anovaOutputPreDmn(:,[1 2 6 4 3 5]);
-tableAnovaPreDmn = array2table(anovaOutputPreDmn, 'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
+anovaOutputDmnPre = anovaOutputDmnPre(:,[1 2 6 4 3 5]);
+tableAnovaDmnPre = array2table(anovaOutputDmnPre, 'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
 
 %%             T-TEST OF PRE: GROUPS DMN REGION-TO-REGION CROSS-CORRELATIONS
 for node1 = 1:length(dmn)
      for node2 = 1:length(dmn)
         preDmnHC = mean(squeeze(dmnzgfcccs(node1, node2, i1, 1, :)), 2);
-        % preDmnCLBP = mean(squeeze(dmnzgfcccs(node1, node2, i2, 1, :)), 2);
+        preDmnCLBP = mean(squeeze(dmnzgfcccs(node1, node2, i2, 1, :)), 2);
         % preDmnFM = mean(squeeze(dmnzgfcccs(node1, node2, i3, 1, :)), 2);
                % USE COMBINED GROUP IF NO SIG DIFFS IN PAIN GROUPS ABOVE
         preDmnGps = mean(squeeze(dmnzgfcccs(node1, node2, i4, 1, :)), 2);     % BOTH CP GROUPS
@@ -197,7 +197,9 @@ end
 %         THESE IDENTIFY GROUP DIFFERENCES IN ROI-TO-ROI FUNCTIONAL CONNECTIVITY
 pid = FDR(ttest_pval_DmnPre,.05);
 [I,J] = find(ttest_pval_DmnPre <= pid);
-[I J];
+%         NOT USING FDR
+[z1,z2] = find(ttest_pval_DmnPre <= .05);
+% [I J];
 
 %% Fancy code to print-out RESULTS
 
@@ -206,24 +208,35 @@ OUT_Text_DmnPre = [];
 % Now, add strings to that OUT_TEXT
 % and you can use the "sprintf" command for syntax like tabs, line breaks
 
-OUT_Text_DmnPre = [OUT_Text_DmnPre 'These ROIs correlations differ between groups:' sprintf('\t') sprintf('\n')];
-for i=1:numel(I)
-     pairNum = num2str(i);
-     roi1num = num2str(I(i));
-     roi1str = painnames3(I(i),:);
-     roi2num = num2str(J(i));
-     roi2str = painnames3(J(i),:);
-     PainROI_tval = pain_ttest_tval(I(i),J(i));
-     PainROI_pval = pain_ttest_pval(I(i),J(i));
-     % OUT_TEXT = [OUT_TEXT roi1str ' (#' roi1num ') with ' roi2str ' (#' roi2num ')' sprintf('\t') ...
-     %  't-score: ' num2str(PainROI_tval) sprintf('\t') ' p-value: ' sprintf('%0.05f',PainROI_pval) ...
-     %  sprintf('\n') ];
-      % OUT_TEXT = [OUT_TEXT roi1str '(#',roi1num,') with ',roi2str '(#', roi2num ')' ...
-      % 't-score: ' num2str(PainROI_tval) ' p-value: ' sprintf('%0.05f',PainROI_pval) ...
-      % sprintf('\n') ];
-      OUT_Text_DmnPre = [OUT_Text_DmnPre pairNum roi1str, '(#',roi1num,') with ',roi2str, ...
-      '(#', roi2num,')', 't-score: ' num2str(PainROI_tval), ' p-value: ' sprintf('%0.05f',PainROI_pval)...
-      sprintf('\n')]
+OUT_Text_DmnPre = [OUT_Text_DmnPre 'For the pain ROIs, pre mood manipulation, there are sig ' ...
+                    'group diffs in the CCs of these ROI-pairs:' sprintf('\t') ...
+                    sprintf('\n')];
+          % USING FDR
+% for i=1:numel(I)
+%      pairNum = num2str(i);
+%      roi1num = num2str(I(i));
+%      roi1str = dmnnames3(I(i),:);
+%      roi2num = num2str(J(i));
+%      roi2str = dmnnames3(J(i),:);
+%      ttest_tval_DmnPre = ttest_tval_DmnPre(I(i),J(i));
+%      ttest_pval_DmnPre = ttest_pval_DmnPre(I(i),J(i));
+%      OUT_Text_DmnPre = [OUT_Text_DmnPre pairNum, '. ' roi1str, '(#',roi1num,') with ',roi2str, ...
+%       '(#', roi2num,')', 't-val: ' num2str(ttest_tval_DmnPre), ' p-val: ' sprintf('%0.05f',ttest_pval_DmnPre)...
+%       sprintf('\n')]
+% end
+
+          % NOT USING FDR
+for i=1:numel(z1)
+pairNum = num2str(i);
+roi1num = num2str(z1(i));
+roi1str = dmnnames3(z1(i),:);
+roi2num = num2str(z2(i));
+roi2str = dmnnames3(z2(i),:);
+ROI_tval_DmnPre = ttest_tval_DmnPre(z1(i),z2(i));
+ROI_pval_DmnPre = ttest_pval_DmnPre(z1(i),z2(i));
+OUT_Text_DmnPre = [OUT_Text_DmnPre pairNum, '. ' roi1str, '(#',roi1num,') with ',roi2str, ...
+'(#', roi2num,')', 't-val: ' num2str(ROI_tval_DmnPre), ' p-val: ' sprintf('%0.05f',ROI_pval_DmnPre)...
+sprintf('\n')]
 end
 
 OUT_Text_DmnPre
