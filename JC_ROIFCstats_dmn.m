@@ -11,6 +11,7 @@
 %         MODIFIED ON:	  2018_02_02
 %         MODIFIED ON:	  2018_02_12
 %         MODIFIED ON:	 2018_02_13
+%    	MODIFIED ON:	 2018_04_24
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
@@ -27,13 +28,16 @@ cd(rootpath);
 load FCvars.mat
 
 % load VOI
-voi = xff('Craggs_VOIs.voi');
+%voi = xff('Craggs_VOIs.voi');
+voi = xff('/Users/jcraggs/Documents/GitHub/Psychometric/ROIs/AALmasks1.voi');
 voinames = voi.VOINames;
 
 % indices for pain
-pain = find(~cellfun('isempty', regexpi(voinames, '^pain')));
-dmn = find(~cellfun('isempty', regexpi(voinames, '^dmn')));
-voiorder = [pain; dmn];
+pain = find(~cellfun('isempty', regexpi(voinames, '^Pain')));
+dmn = find(~cellfun('isempty', regexpi(voinames, '^DMN')));
+both = find(~cellfun('isempty', regexpi(voinames, '^Both')));
+%voiorder = [pain; dmn];
+voiorder = [pain; dmn; both];
 nvs = numel(voiorder);
 
 % find subjects in three groups
@@ -72,17 +76,24 @@ zgfcccs = squeeze(mean(zgfcccs, 4));
 % to split into within network matrices
 %   THESE ARE ARRAYS OF CROSS CORRELATIONS AMONG REGIONS IN EACH NETWORK
 %   THE ARRAYS ARE ORGANIZED AS (REGIONS^REGIONS, ALL SUBJECTS, PRE & POST, POS & NEG)
-painzgfcccs = zgfcccs(1:16, 1:16, :, :, :);
-dmnzgfcccs = zgfcccs(17:22, 17:22, :, :, :);
+%painstart = bothend +1;
+painstart = 1;
+painend = length(pain);
+dmnstart = painend + 1;
+dmnend = length(pain) + length(dmn);
+bothstart = dmnend + 1;
+bothend = length(both) + length(pain) + length(dmn);
+
+painzgfcccs = zgfcccs(painstart:painend, painstart:painend, :, :, :);
+dmnzgfcccs = zgfcccs(dmnstart:dmnend, dmnstart:dmnend, :, :, :);
+bothzgfcccs = zgfcccs(bothstart:bothend, bothstart:bothend, :, :, :);
 
 % average connectivity strengths
-%   THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE 16 PAIN REGIONS
-painnet = squeeze(sum(sum(painzgfcccs, 1), 2)) ./ (16 * 15);
-%   THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE 6 DMN REGIONS
-dmnnet = squeeze(sum(sum(dmnzgfcccs, 1), 2)) ./ (6 * 5);
-
-% get left amygdala (region 2) to left anterior insula (region 8) from pain network
-pain_lamyg_2_linsula = squeeze(painzgfcccs(2, 8, :, :, :));
+%   THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE PAIN REGIONS
+painnet = squeeze(sum(sum(painzgfcccs, 1), 2)) ./ (length(pain) * (length(pain) -1));
+%   THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE DMN REGIONS
+dmnnet = squeeze(sum(sum(dmnzgfcccs, 1), 2)) ./ (length(dmn) * (length(dmn) -1));
+%
 
 % to unpack:
 % - i1 and i2 are the indices for groups HC and CLBP
@@ -90,17 +101,52 @@ pain_lamyg_2_linsula = squeeze(painzgfcccs(2, 8, :, :, :));
 % - the next ", 1" is the "neg session" selection
 %
 %           LIST OUT THE BRAIN REGIONS IN THE PAIN AND DMN NETWORKS
+%           LIST OUT THE BRAIN REGIONS IN THE PAIN AND DMN NETWORKS
 char(voinames(voiorder));
-painnames = char(voinames(voiorder(1:16)));
-dmnnames = char(voinames(voiorder(17:22)));
+painnames = char(voinames(voiorder(painstart:painend)));
+dmnnames = char(voinames(voiorder(dmnstart:dmnend)));
+bothnames = char(voinames(voiorder(bothstart:bothend)));
 
-%%           ANALYSIS #0 (3 GROUP ANOVA FOR PRE)
+% computing the ANOVA for all pairs
+% computing the ANOVA for all pairs
+Dmn_anovaresults_effect = zeros(length(pain),length(pain));
+Dmn_anovaresults_pvalue = zeros(length(pain),length(pain));
+
+for node1 = 1:length(dmn)
+     for node2 = 1:length(dmn)
+        preDmnHC = mean(squeeze(dmnzgfcccs(node1, node2, i1, 1, :)), 2);
+        preDmnCLBP = mean(squeeze(dmnzgfcccs(node1, node2, i2, 1, :)), 2);
+        preDmnFM = mean(squeeze(dmnzgfcccs(node1, node2, i3, 1, :)), 2);
+%
+%         % place the code between lines 116 and 131 here
+        gpNames = {'HC','CLBP','FM'};               % VARIABLE OF GROUP NAMES
+%       STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
+%       THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
+%       IDENTIFY THE LARGEST GROUP
+        A = max([length(i1),length(i2),length(i3)]);
+        A = zeros(A,3);    % INITIALIZE ARRAY OF ALL ZEROS  FOR LARGEST GROUP
+        A(A == 0) = NaN;    % CONVERT ALL '0' TO 'NaN' (MISSING VALUES)
+        A(1:length(preDmnHC),1) = preDmnHC;       % HC TO COLUMN 1
+        A(1:length(preDmnCLBP),2) = preDmnCLBP;   % CLBP TO COLUMN 2
+        A(1:length(preDmnFM),3) = preDmnFM;       % FM TO COLUMN 3
+%       STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
+%       CREATE A TABLE OF OVERALL F-TEST
+        [p,tbl,stats] = anova1(A,gpNames, 'off');      % TABLE OF OVERALL RESULTS
+%         ftestNames = tbl(1,:);                  % VARIABLE NAMES FOR THE TABLE
+%         ftestNames{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
+%         tableFtest = array2table(tbl(2:4,:),'VariableNames',ftestNames);
+        % pain_anovaresults_effect(node1, node2) = SOME_VALUE;
+        dmn_anovaresults_pvalue(node1, node2) = p;
+    end
+end
+
+%%           ANALYSIS #0 (3 GROUP ANOVA FOR PRE - DMN REGIONS)
 %       COMPUTING 3-GROUP ANOVA FOR THE PRE-MANIPULATION RESTING STATE SCANS
-%       STEP 1 = CREATE VARIABLES OF THE MEAN CORRELATION OF ALL PAIN REGIONS
+%       STEP 1 = CREATE VARIABLES OF THE MEAN CORRELATION OF ALL DMN REGIONS
 %       FOR EACH GROUP OF THE PRE SCANS ACROSS BOTH VISITS
-preDMNHC = mean(dmnnet(i1,1,:),3);        % MEAN OF HC
-preDMNCLBP = mean(dmnnet(i2,1,:),3);      % MEAN OF CLBP
-preDMNFM = mean(dmnnet(i3,1,:),3);        % MEAN OF FM
+preDmnHC = mean(dmnnet(i1,1,:),3);        % MEAN OF HC
+preDmnCLBP = mean(dmnnet(i2,1,:),3);      % MEAN OF CLBP
+preDmnFM = mean(dmnnet(i3,1,:),3);        % MEAN OF FM
 gpNames = {'HC','CLBP','FM'};               % VARIABLE OF GROUP NAMES
 %       STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
 %       THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
@@ -108,25 +154,114 @@ gpNames = {'HC','CLBP','FM'};               % VARIABLE OF GROUP NAMES
 A = max([length(i1),length(i2),length(i3)]);
 A = zeros(A,3);    % INITIALIZE ARRAY OF ALL ZEROS  FOR LARGEST GROUP
 A(A == 0) = NaN;    % CONVERT ALL '0' TO 'NaN' (MISSING VALUES)
-A(1:length(preDMNHC),1) = preDMNHC;       % HC TO COLUMN 1
-A(1:length(preDMNCLBP),2) = preDMNCLBP;   % CLBP TO COLUMN 2
-A(1:length(preDMNFM),3) = preDMNFM;       % FM TO COLUMN 3
+A(1:length(preDmnHC),1) = preDmnHC;       % HC TO COLUMN 1
+A(1:length(preDmnCLBP),2) = preDmnCLBP;   % CLBP TO COLUMN 2
+A(1:length(preDmnFM),3) = preDmnFM;       % FM TO COLUMN 3
 %       STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
 %       CREATE A TABLE OF OVERALL F-TEST
 [p,tbl,stats] = anova1(A,gpNames);      % TABLE OF OVERALL RESULTS
-ftestNames = tbl(1,:);                  % VARIABLE NAMES FOR THE TABLE
-ftestNames{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
-tableFtest = array2table(tbl(2:4,:),'VariableNames',ftestNames);
+ftestNamesPreDmn = tbl(1,:);                  % VARIABLE NAMES FOR THE TABLE
+ftestNamesPreDmn{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
+tableFtestPreDmn = array2table(tbl(2:4,:),'VariableNames',ftestNamesPreDmn);
 figure;
 %[~,~,stats] = anova1(A,gpNames);        % I AM NOT SURE WHAT THIS DOES ...
 [c,~,~,gnames] = multcompare(stats);    % EVALUATE MULTIPLE COMPARISONS
 %       STEP 4 = PREPARING STATS OUTPUT
 %       CREATE AN ARRAY OF ANOVA OUTPUT
-anovaPreOutput = [gnames(c(:,1)), gnames(c(:,2)), num2cell(c(:,3:6))];
+anovaOutputPreDmn = [gnames(c(:,1)), gnames(c(:,2)), num2cell(c(:,3:6))];
 %       INITIAL ORDER OF OUTPUT FROM THE MULTICOMPARISON STEP
 %       COLUMNS 1-6 =  {'gp1','gp2','lCI','gpDiff','uCI','pval'}
 %       CHANGING THE VARIABLE ORDER IN THE OUTPUT ARRAY TO
 %       COLUMNS 1-6 = {'gp1','gp2', 'pval','gpDiff','lCI','uCI'}) AND THEN
 %       CREATE A TABLE OF THE MULTICOMPARISON OUTPUT
-anovaPreDMNOutput = anovaPreOutput(:,[1 2 6 4 3 5]);
-tableAnovaDMNPre = array2table(anovaPreOutput, 'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
+anovaOutputPreDmn = anovaOutputPreDmn(:,[1 2 6 4 3 5]);
+tableAnovaPreDmn = array2table(anovaOutputPreDmn, 'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
+
+
+%%             SYNTAX FOR PERFORMING A MANOVA
+%              START BY CREATING A VECTOR REPRESENTING ALL THE GROUPS
+gp1 = ones(length(i1),1);
+gp2 = 2*ones(length(i2),1);
+gp3 = 3*ones(length(i3),1);
+gps123 = cat(1,gp1,gp2,gp3);
+groups = nominal(gps123);               % SPECIFY THIS AS AN ORDINAL VARIABLE
+groups = setlabels(groups,{'HC','CLBP','FM'});    % SET THE VARIABLE LABELS
+preDmn123 = cat(1,preDmnHC, preDmnCLBP,preDmnFM);  % CREATE ANOTHER VECTOR TO INCLUDE
+%              RUN THE MANOVA
+[d,p,stats] = manova1(preDmn123,groups)
+
+%           ANALYSIS #1 (3 GROUP ANOVA FOR POST COLLAPSED ACROSS CONDITIONS)
+%              COMPUTING 3-GROUP ANOVA FOR THE POST-MANIPULATION RESTING STATE SCANS
+%       STEP 1 = CREATE VARIABLES OF THE MEAN CORRELATION OF ALL DMN REGIONS
+%         FOR EACH GROUP OF THE POST SCANS ACROSS BOTH VISITS
+postDmnHC = mean(dmnnet(i1,2,:),3);        % MEAN OF HC
+postDmnCLBP = mean(dmnnet(i2,2,:),3);      % MEAN OF CLBP
+postDmnFM = mean(dmnnet(i3,2,:),3);        % MEAN OF FM
+gpNames = {'HC post','CLBP post','FM post'};               % VARIABLE OF GROUP NAMES
+%       STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
+%         THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
+%         IDENTIFY THE LARGEST GROUP
+A = max([length(i1),length(i2),length(i3)]);
+A = zeros(A,3);    % INITIALIZE ARRAY OF ALL ZEROS  FOR LARGEST GROUP
+A(A == 0) = NaN;    % CONVERT ALL '0' TO 'NaN' (MISSING VALUES)
+A(1:length(postDmnHC),1) = postDmnHC;       % HC TO COLUMN 1
+A(1:length(postDmnCLBP),2) = postDmnCLBP;   % CLBP TO COLUMN 2
+A(1:length(postDmnFM),3) = postDmnFM;       % FM TO COLUMN 3
+%       STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
+%         CREATE A TABLE OF OVERALL F-TEST
+[p,tbl,stats] = anova1(A,gpNames,'off');      % TABLE OF OVERALL RESULTS
+ftestNamesPostDmn = tbl(1,:);                  % VARIABLE NAMES FOR THE TABLE
+ftestNamesPostDmn{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
+tableFtestPostDmn = array2table(tbl(2:4,:),'VariableNames',ftestNamesPostDmn);
+figure;
+%[~,~,stats] = anova1(A,gpNames);        % I AM NOT SURE WHAT THIS DOES ...
+[c,~,~,gnames] = multcompare(stats);    % EVALUATE MULTIPLE COMPARISONS
+%       STEP 4 = PREPARING STATS OUTPUT
+%       CREATE AN ARRAY OF ANOVA OUTPUT
+anovaOutputPostDmn = [gnames(c(:,1)), gnames(c(:,2)), num2cell(c(:,3:6))];
+%       INITIAL ORDER OF OUTPUT FROM THE MULTICOMPARISON STEP
+%       COLUMNS 1-6 =  {'gp1','gp2','lCI','gpDiff','uCI','pval'}
+%       CHANGING THE VARIABLE ORDER IN THE OUTPUT ARRAY TO
+%       COLUMNS 1-6 = {'gp1','gp2', 'pval','gpDiff','lCI','uCI'}) AND THEN
+%       CREATE A TABLE OF THE MULTICOMPARISON OUTPUT
+anovaOutputPostDmn = anovaOutputPostDmn(:,[1 2 6 4 3 5]);
+tableAnovaPostDmn = array2table(anovaOutputPostDmn, 'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
+
+
+
+
+
+
+
+%%         SAVE WORKSPACE
+DmnROIFCstatsOutput = ['DmnROIFCstats_',datestr(now, 'yyyy-mm-dd'),'.mat']
+save(DmnROIFCstatsOutput);
+
+
+%
+% % painzgfcccs = zgfcccs(1:16, 1:16, :, :, :);
+% % dmnzgfcccs = zgfcccs(17:22, 17:22, :, :, :);
+%
+% % average connectivity strengths
+% %   THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE 16 PAIN REGIONS
+% painnet = squeeze(sum(sum(painzgfcccs, 1), 2)) ./ (16 * 15);
+% %   THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE 6 DMN REGIONS
+% dmnnet = squeeze(sum(sum(dmnzgfcccs, 1), 2)) ./ (6 * 5);
+%
+% % get left amygdala (region 2) to left anterior insula (region 8) from pain network
+% pain_lamyg_2_linsula = squeeze(painzgfcccs(2, 8, :, :, :));
+
+%
+% char(voinames(voiorder));
+% painnames = char(voinames(voiorder(1:16)));
+% dmnnames = char(voinames(voiorder(17:22)));
+
+%
+% pain_anovaresults_effect = zeros(16, 16);
+% pain_anovaresults_pvalue = zeros(16, 16);
+%
+% for node1 = 1:16
+%     for node2 = 1:16
+%         preDmnHC = mean(squeeze(painzgfcccs(node1, node2, i1, 1, :)), 2);
+%         preDmnCLBP = mean(squeeze(painzgfcccs(node1, node2, i2, 1, :)), 2);
+%         preDmnFM = mean(squeeze(painzgfcccs(node1, node2, i3, 1, :)), 2);
