@@ -138,9 +138,9 @@ pain_anovaresults_pvalue = zeros(length(pain),length(pain));
 %         COMPUTING 3-GROUP ANOVA FOR THE PRE-MANIPULATION RESTING STATE SCANS
 %              STEP 1 = CREATE VARIABLES OF THE MEAN CORRELATION OF ALL PAIN REGIONS
 %                   FOR EACH GROUP OF THE PRE SCANS ACROSS BOTH VISITS
-HCPainPre = mean(painnet(i1,1,:),3);        % MEAN OF HC
-CLBPPainPre = mean(painnet(i2,1,:),3);      % MEAN OF CLBP
-FMPainPre = mean(painnet(i3,1,:),3);        % MEAN OF FM
+HC_PainPre = mean(painnet(i1,1,:),3);        % MEAN OF HC
+CLBP_PainPre = mean(painnet(i2,1,:),3);      % MEAN OF CLBP
+FM_PainPre = mean(painnet(i3,1,:),3);        % MEAN OF FM
 gpNames = {'HC','CLBP','FM'};               % VARIABLE OF GROUP NAMES
 %              STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
 %                   THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
@@ -148,15 +148,15 @@ gpNames = {'HC','CLBP','FM'};               % VARIABLE OF GROUP NAMES
 A = max([length(i1),length(i2),length(i3)]);
 A = zeros(A,3);    % INITIALIZE ARRAY OF ALL ZEROS  FOR LARGEST GROUP
 A(A == 0) = NaN;    % CONVERT ALL '0' TO 'NaN' (MISSING VALUES)
-A(1:length(HCPainPre),1) = HCPainPre;       % HC TO COLUMN 1
-A(1:length(CLBPPainPre),2) = CLBPPainPre;   % CLBP TO COLUMN 2
-A(1:length(FMPainPre),3) = FMPainPre;       % FM TO COLUMN 3
+A(1:length(HC_PainPre),1) = HC_PainPre;       % HC TO COLUMN 1
+A(1:length(CLBP_PainPre),2) = CLBP_PainPre;   % CLBP TO COLUMN 2
+A(1:length(FM_PainPre),3) = FM_PainPre;       % FM TO COLUMN 3
 %              STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
 %                   CREATE A TABLE OF OVERALL F-TEST
 [p_PainPre,tbl_PainPre,stats_PainPre] = anova1(A,gpNames);      % TABLE OF OVERALL RESULTS
 ftestNamesPain = tbl_PainPre(1,:);                  % VARIABLE NAMES FOR THE TABLE
 ftestNamesPain{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
-tableFtestPain = array2table(tbl_PainPre(2:4,:),'VariableNames',ftestNamesPain);
+tableFtestPainPre = array2table(tbl_PainPre(2:4,:),'VariableNames',ftestNamesPain);
 figure;
 %[~,~,stats] = anova1(A,gpNames);        % I AM NOT SURE WHAT THIS DOES ...
 [c,~,~,gnames] = multcompare(stats_PainPre);    % EVALUATE MULTIPLE COMPARISONS
@@ -171,15 +171,13 @@ anovaOutputPainPre = [gnames(c(:,1)), gnames(c(:,2)), num2cell(c(:,3:6))];
 anovaOutputPainPre = anovaOutputPainPre(:,[1 2 6 4 3 5]);
 tableAnovaPainPre = array2table(anovaOutputPainPre, 'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
 %
-%              T-TEST COMPARING GROUPS ON THE REGION-TO-REGION CROSS-CORRELATIONS
+%%              T-TEST COMPARING GROUPS ON THE REGION-TO-REGION CROSS-CORRELATIONS
 for node1 = 1:length(pain)         % PAIN REGION #1
      for node2 = 1:length(pain)    % PAIN REGION #1
         prePainHC = mean(squeeze(painzgfcccs(node1, node2, i1, 1, :)), 2);
         % prePainCLBP = mean(squeeze(painzgfcccs(node1, node2, i2, 1, :)), 2);
         % prePainFM = mean(squeeze(painzgfcccs(node1, node2, i3, 1, :)), 2);
         prePainGps = mean(squeeze(painzgfcccs(node1, node2, i4, 1, :)), 2);     % BOTH CP GROUPS
-%
-%         % place the code between lines 116 and 131 here
         gpNames = {'HC','CLBP','FM'};           % VARIABLE: GROUP NAMES
         gpNames2 = {'HC','Pain'};               % VARIABLE: GROUP NAMES COLLAPSED ACROSS CP GROUPS
 %       STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
@@ -214,6 +212,7 @@ for i = 1:24
 end
 
 %         THESE IDENTIFY GROUP DIFFERENCES IN ROI-TO-ROI FUNCTIONAL CONNECTIVITY
+%         FDR CORRECTION
 pid = FDR(ttest_pval_PainPre,.05);
 [I,J] = find(ttest_pval_PainPre <= pid);
 [I J];
@@ -244,7 +243,7 @@ for i=1:numel(I)
       % sprintf('\n') ];
       OUT_Text_PainPre = [OUT_Text_PainPre pairNum, '. ' roi1str, '(#',roi1num,') with ',roi2str, ...
       '(#', roi2num,')', sprintf('\t'), 't-val: ', num2str(PainROI_tval), sprintf('\t'), 'p-val: ' ...
-      sprintf('%0.05f',PainROI_pval) sprintf('\n')]
+      sprintf('%0.05f',PainROI_pval) sprintf('\n')];
 end
 
 OUT_Text_PainPre
@@ -263,6 +262,55 @@ imagesc(ttest_tval_PainPre);colorbar;colormap('jet');
 %% Now that we have identified ROI-ROI correlations that differ between groups
 %  We want to test what behavioral variables (if any) contribute to those differences in fxnl connectivity
 
+
+
+psqiPlusRoiNames = [psqiNames, 'Y'];
+
+%             RUNNING MULTIPLE LINERAR REGRESSION USING fitlm (WITH A TABLE)
+%
+%             DECALRE A STRUCT TO HOLD ALL THE RESULTS FROM THE fitlm LOOP
+LM_PainPre = struct();
+for i=1:numel(I);
+     node1 = I(i);
+     node2 = J(i);
+     Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
+     psqiPlusROI = [psqiData, Y];
+     tablePsqiPlusROI = array2table(psqiPlusROI, 'VariableNames',psqiPlusRoiNames);
+     LM_PainPre.(strcat('lm', num2str(i))) = fitlm(tablePsqiPlusROI, 'Y~TiB_hrs+SoL_min+WASO_min');
+end
+% %         OUTPUT THE OVERALL F AND P-VALUES FOR EACH MODEL
+for i=1:numel(I);
+     LM_PainPre.Model = anova(LM_PainPre.(strcat('lm', num2str(i))), 'summary');
+     LM_PainPre.modelSummary(i, :) = LM_PainPre.Model(2,4:5);
+end
+% %         IDENTIFY SIGNIGCANT MODELS
+ LM_PainPre.modelSummary.sig = [LM_PainPre.modelSummary.pValue < 0.05];
+LM_PainPre.modelSummary.node1 = I;
+LM_PainPre.modelSummary.node2 = J;
+for i=1:numel(I);
+  node1 = I(i);
+  node2 = J(i);
+  roi1num = num2str(I(i));
+  roi1str = painnames2(I(i),:);
+  roi2num = num2str(J(i));
+  roi2str = painnames2(J(i),:);
+  DUMMY_ROI1{i} = roi1str;
+  DUMMY_ROI2{i} = roi2str;
+end
+LM_PainPre.modelSummary.roi1 = DUMMY_ROI1';
+LM_PainPre.modelSummary.roi2 = DUMMY_ROI2';
+LM_PainPre.modelSummary.model = (1:numel(I))';
+LM_PainPre.modelSummary = LM_PainPre.modelSummary(:, [8 3 2 1 4 5 6 7]);
+%
+%
+%
+%
+%
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%   END SCRIPT     %%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%   OTHER ANALYSES    %%%%%%%%%%%%%%%%%%%%%%
 % Method A:  Simple linear regression
 % NOTE: VERY Simple
 % Instead, we are going to use multiple regression
@@ -316,30 +364,14 @@ imagesc(ttest_tval_PainPre);colorbar;colormap('jet');
 %
 %      end
 % end
-
-
-psqiPlusRoiNames = [psqiNames, 'Y'];
-
-%             RUNNING MULTIPLE LINERAR REGRESSION USING fitlm (WITH A TABLE)
 %
-%             DECALRE A STRUCT TO HOLD ALL THE RESULTS FROM THE fitlm LOOP
-LM1 = struct();
-for i=1:numel(I);
-     node1 = I(i);
-     node2 = J(i);
-     Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
-     psqiPlusROI = [psqiData, Y];
-     tablePsqiPlusROI = array2table(psqiPlusROI, 'VariableNames',psqiPlusRoiNames);
-     LM1.(strcat('lm', num2str(i))) = fitlm(tablePsqiPlusROI, 'Y~TiB_hrs+SoL_min+WASO_min');
-end
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%   OTHER ANALYSES    %%%%%%%%%%%%%%%%%%%%%%
 
-% %         OUTPUT THE OVERALL F AND P-VALUES FOR EACH MODEL
-for i=1:numel(I);
-lm1Model = anova(LM1.(strcat('lm', num2str(i))), 'summary');
-lm1modelSummary(i, :) = lm1Model(2,4:5);
-end
-%         IDENTIFY SIGNIGCANT MODELS
-lm1modelSummary.sig = [lm1modelSummary.pValue < 0.05];
+
+
+
 
 
 
@@ -348,33 +380,30 @@ lm1modelSummary.sig = [lm1modelSummary.pValue < 0.05];
 %              RUNNING MULTIPLE LINERAR REGRESSION USING fitlm (WITHOUT A TABLE)
 %
 %              DECALRE A STRUCT TO HOLD ALL THE RESULTS FROM THE fitlm LOOP
-LM = struct();
-nodePairs = [];
-for i=1:numel(I);
-     node1 = I(i);
-     node2 = J(i);
-     roi1num = num2str(I(i));
-     roi1str = painnames(I(i),:);
-     roi2num = num2str(J(i));
-     roi2str = painnames(J(i),:);
-     xVars = [psqiData(:, 3:5)];
-     nodePairs = [nodePairs, roi1str, roi2str, sprintf('\n')];
-     Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
-     %nodePairs = [node1, roi1str, node2, roi2str sprintf('\n')];
-     %nodePairs = painnames3(I,J];
-     LM.(strcat('rois')) = [nodePairs, node1, node2];
-     % {roi1str, roi2str};
-     LM.(strcat('lm', num2str(i))) = fitlm(xVars,Y);
-
-end
-%nodePairs = [node1, node2];
-
-%         OUTPUT THE OVERALL F AND P-VALUES FOR EACH MODEL
-for i=1:numel(I);
-ztbl2 = anova(LM.(strcat('lm', num2str(i))), 'summary');
-modelSummary(i, :) = ztbl2(2,4:5);
-end
-
+% LM = struct();
+% for i=1:numel(I);
+%      node1 = I(i);
+%      node2 = J(i);
+%      roi1num = num2str(I(i));
+%      roi1str = painnames(I(i),:);
+%      roi2num = num2str(J(i));
+%      roi2str = painnames(J(i),:);
+%      xVars = [psqiData(:, 3:5)];
+%      % nodePairs = [nodePairs, roi1str, roi2str, sprintf('\n')];
+%      Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
+%      %
+%      % LM.(strcat('rois')) = [nodePairs, node1, node2];
+%      % % {roi1str, roi2str};
+%      LM.(strcat('lm', num2str(i))) = fitlm(xVars,Y);
+%
+% end
+%
+% %         OUTPUT THE OVERALL F AND P-VALUES FOR EACH MODEL
+% for i=1:numel(I);
+% ztbl2 = anova(LM.(strcat('lm', num2str(i))), 'summary');
+% modelSummary(i, :) = ztbl2(2,4:5);
+% end
+%
 
 % zlm = fitlm(tablePsqiPlusROI, 'Y~TiB_hrs+SoL_min+WASO_min')
 

@@ -117,12 +117,12 @@ dmnnet = squeeze(sum(sum(dmnzgfcccs, 1), 2)) ./ (length(dmn) * (length(dmn) -1))
 %
 %
 %              CREATE MATRIX OF PAIN CC'S AND BEHAVIORAL DATA
-%              RESHAPE THE PAINNET CC'S, COLUMNS 1&2=PRE/POST; COLUMNS 3&4=NEG/POS
+%              RESHAPE THE NETWORK CC'S, COLUMNS 1&2=PRE/POST; COLUMNS 3&4=NEG/POS
 sub_by_painCCs = [painnet(:,1:2,1),painnet(:,1:2,2)];
+sub_by_dmnCCs = [dmnnet(:,1:2,1),dmnnet(:,1:2,2)];
 psqiData = glistd(:,[1 12:24]);
 psqiNames = {'ID','TiB_hrs', 'SoL_min','WASO_min','TST_hrs','SleepEfficiency','psqi_Durat','psqi_Distb', ...
                'psqi_Latency','psqi_DayDys','psqi_SE','psqi_BadSQual','psqi_Meds','PSQI_total'};
-
 PSQIandPainCCs = [psqiData,sub_by_painCCs];
 
 %         to unpack:
@@ -153,13 +153,13 @@ A(1:length(CLBP_DmnPre),2) = CLBP_DmnPre;   % CLBP TO COLUMN 2
 A(1:length(FM_DmnPre),3) = FM_DmnPre;       % FM TO COLUMN 3
 %              STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
 %                   CREATE A TABLE OF OVERALL F-TEST
-[pDmnPre,tblDmnPre,statsDmnPre] = anova1(A,gpNames);      % TABLE OF OVERALL RESULTS
-ftestNamesPreDmn = tblDmnPre(1,:);                  % VARIABLE NAMES FOR THE TABLE
-ftestNamesPreDmn{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
-tableFtestPreDmn = array2table(tblDmnPre(2:4,:),'VariableNames',ftestNamesPreDmn);
+[p_DmnPre,tbl_DmnPre,stats_DmnPre] = anova1(A,gpNames);      % TABLE OF OVERALL RESULTS
+ftestNamesDmnPre = tbl_DmnPre(1,:);                  % VARIABLE NAMES FOR THE TABLE
+ftestNamesDmnPre{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
+tableFtestDmnPre = array2table(tbl_DmnPre(2:4,:),'VariableNames',ftestNamesDmnPre);
 figure;
 %[~,~,stats] = anova1(A,gpNames);        % I AM NOT SURE WHAT THIS DOES ...
-[c,~,~,gnames] = multcompare(statsDmnPre);    % EVALUATE MULTIPLE COMPARISONS
+[c,~,~,gnames] = multcompare(stats_DmnPre);    % EVALUATE MULTIPLE COMPARISONS
 %              STEP 4 = PREPARING STATS OUTPUT
 %                   CREATE AN ARRAY OF ANOVA OUTPUT
 anovaOutputDmnPre = [gnames(c(:,1)), gnames(c(:,2)), num2cell(c(:,3:6))];
@@ -181,9 +181,9 @@ for node1 = 1:length(dmn)
         preDmnGps = mean(squeeze(dmnzgfcccs(node1, node2, i4, 1, :)), 2);     % BOTH CP GROUPS
         gpNames = {'HC','CLBP','FM'};        % GROUP NAMES
         gpNames2 = {'HC','Pain'};            % GROUP NAMES COLLAPSED ACROSS CP GROUPS
-        [H,P,CI,STATS] = ttest2(preDmnHC,preDmnGps);           % 2 SAMPLE T-TEST
-        ttest_tval_DmnPre(node1, node2) = STATS.tstat; % tstat
-        ttest_pval_DmnPre(node1, node2) = P; % pvalue
+        [H_DmnPre,P_DmnPre,CI_DmnPre,STATS_DmnPre] = ttest2(preDmnHC,preDmnGps);           % 2 SAMPLE T-TEST
+        ttest_tval_DmnPre(node1, node2) = STATS_DmnPre.tstat; % tstat
+        ttest_pval_DmnPre(node1, node2) = P_DmnPre; % pvalue
     end
 end
 
@@ -195,6 +195,7 @@ for i = 1:24
 end
 
 %         THESE IDENTIFY GROUP DIFFERENCES IN ROI-TO-ROI FUNCTIONAL CONNECTIVITY
+%         FDR CORRECTION
 pid = FDR(ttest_pval_DmnPre,.05);
 [I,J] = find(ttest_pval_DmnPre <= pid);
 %         NOT USING FDR
@@ -236,7 +237,7 @@ ROI_tval_DmnPre = ttest_tval_DmnPre(z1(i),z2(i));
 ROI_pval_DmnPre = ttest_pval_DmnPre(z1(i),z2(i));
 OUT_Text_DmnPre = [OUT_Text_DmnPre pairNum, '. ' roi1str, '(#',roi1num,') with ',roi2str, ...
 '(#', roi2num,')', 't-val: ' num2str(ROI_tval_DmnPre), ' p-val: ' sprintf('%0.05f',ROI_pval_DmnPre)...
-sprintf('\n')]
+sprintf('\n')];
 end
 
 OUT_Text_DmnPre
@@ -244,19 +245,19 @@ OUT_Text_DmnPre
 %         WRITE OUT THE SIGNIFICANT ROI-TO-ROI CORRELATION BETWEEN GROUPS
 %dlmwrite('PainRoiTtest_PainPre.txt',OUT_Text_PainPre,'')
 whenRun = datestr(now, 'yyyy-mm-dd_HHMM');
-file_id1 = fopen([rootpath 'ROIttest_DmnPre', whenRun,'.txt'], 'w');
-fprintf(file_id1, OUT_Text_DmnPre,'');
-fclose(file_id1);
+file_id2 = fopen([rootpath 'ROIttest_DmnPre', whenRun,'.txt'], 'w');
+fprintf(file_id2, OUT_Text_DmnPre,'');
+fclose(file_id2);
 
 figure;
 imagesc(ttest_tval_DmnPre);colorbar;colormap('jet');
 
-
+psqiPlusRoiNamesDmn = [psqiNames, 'Ydmn'];
 
 %              RUNNING MULTIPLE LINERAR REGRESSION USING fitlm (WITHOUT A TABLE)
 %
 %              DECALRE A STRUCT TO HOLD ALL THE RESULTS FROM THE fitlm LOOP
-LM = struct();
+LM_DmnPre = struct();
 % %         FOR FDR RESULTS
 % for i=1%:numel(I);
 %      node1 = I(i);
@@ -266,12 +267,15 @@ LM = struct();
 %      LM.(strcat('lm', num2str(i))) = fitlm(xVars,Y);
 % end
 %         FOR NON-FDR RESULTS
-for i=1%:numel(z1);
+for i=1:numel(z1);
      node1 = z1(i);
      node2 = z2(i);
-     xVars = [psqiData(:, 3:5)];
-     Y = mean(squeeze(dmnzgfcccs(node1, node2, :, 1, :)), 2);
-     LM.(strcat('lm', num2str(i))) = fitlm(xVars,Y);
+     Ydmn = mean(squeeze(dmnzgfcccs(node1, node2, :, 1, :)), 2);
+     psqiPlusROIDmn = [psqiData, Ydmn];
+     tablePsqiPlusROIDmn = array2table(psqiPlusROIDmn, 'VariableNames',psqiPlusRoiNamesDmn);
+     LM_DmnPre.(strcat('lm', num2str(i))) = fitlm(tablePsqiPlusROIDmn, 'Ydmn~TiB_hrs+SoL_min+WASO_min');
+     % xVars = [psqiData(:, 3:5)];
+     % LM_DmnPre.(strcat('lm', num2str(i))) = fitlm(xVars,Y);
 end
 
 % %         FOR FDR RESULTS
@@ -283,9 +287,9 @@ end
 
 %         FOR NON-FDR RESULTS
 %         OUTPUT THE OVERALL F AND P-VALUES FOR EACH MODEL
-for i=1%:numel(z1);
-ztbl2 = anova(LM.(strcat('lm', num2str(i))), 'summary');
-modelSummary(i, :) = ztbl2(2,4:5);
+for i=1:numel(z1);
+     ztbl22 = anova(LM_DmnPre.(strcat('lm', num2str(i))), 'summary');
+     modelSummary22(i, :) = ztbl22(2,4:5);
 end
 
 %
