@@ -6,7 +6,7 @@
 %
 %		USAGE:			TESTING ROI CORRELATIONS ACROSS GROUPS
 %
-%         LATEST MODIFICATION:     2018_04_25
+%         LATEST MODIFICATION:     2018_04_26
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
@@ -318,53 +318,59 @@ imagesc(ttest_tval_PainPre);colorbar;colormap('jet');
 % end
 
 
-% psqiPlusRoiNames = [psqiNames, 'Y'];
+psqiPlusRoiNames = [psqiNames, 'Y'];
 
-%              RUNNING MULTIPLE LINERAR REGRESSION USING fitlm (WITH A TABLE)
+%             RUNNING MULTIPLE LINERAR REGRESSION USING fitlm (WITH A TABLE)
 %
-%              DECALRE A STRUCT TO HOLD ALL THE RESULTS FROM THE fitlm LOOP
-% LM1 = struct();
-% for i=1:numel(I);
-%      node1 = I(i);
-%      node2 = J(i);
-%      Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
-%      psqiPlusROI = [psqiData, Y];
-%      tablePsqiPlusROI = array2table(psqiPlusROI, 'VariableNames',psqiPlusRoiNames);
-%      LM1.(strcat('lm', num2str(i))) = fitlm(tablePsqiPlusROI, 'Y~TiB_hrs+SoL_min+WASO_min');
-% end
-%
-% % %         OUTPUT THE OVERALL F AND P-VALUES FOR EACH MODEL
-% for i=1:numel(I);
-% lm1Model = anova(LM1.(strcat('lm', num2str(i))), 'summary');
-% lm1modelSummary(i, :) = lm1Model(2,4:5);
-% end
-% %         IDENTIFY SIGNIGCANT MODELS
-% lm1modelSummary.sig = [lm1modelSummary.pValue < 0.05];
-%
+%             DECALRE A STRUCT TO HOLD ALL THE RESULTS FROM THE fitlm LOOP
+LM1 = struct();
+for i=1:numel(I);
+     node1 = I(i);
+     node2 = J(i);
+     Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
+     psqiPlusROI = [psqiData, Y];
+     tablePsqiPlusROI = array2table(psqiPlusROI, 'VariableNames',psqiPlusRoiNames);
+     LM1.(strcat('lm', num2str(i))) = fitlm(tablePsqiPlusROI, 'Y~TiB_hrs+SoL_min+WASO_min');
+end
+
+% %         OUTPUT THE OVERALL F AND P-VALUES FOR EACH MODEL
+for i=1:numel(I);
+lm1Model = anova(LM1.(strcat('lm', num2str(i))), 'summary');
+lm1modelSummary(i, :) = lm1Model(2,4:5);
+end
+%         IDENTIFY SIGNIGCANT MODELS
+lm1modelSummary.sig = [lm1modelSummary.pValue < 0.05];
+
 
 
 %              RUNNING A STEPWISE REGRESSION USING stepwiselm (WITH A TABLE)
-
-
-
-
-
 
 %              RUNNING MULTIPLE LINERAR REGRESSION USING fitlm (WITHOUT A TABLE)
 %
 %              DECALRE A STRUCT TO HOLD ALL THE RESULTS FROM THE fitlm LOOP
 LM = struct();
-for i=1%:numel(I);
+nodePairs = [];
+for i=1:numel(I);
      node1 = I(i);
      node2 = J(i);
+     roi1num = num2str(I(i));
+     roi1str = painnames(I(i),:);
+     roi2num = num2str(J(i));
+     roi2str = painnames(J(i),:);
      xVars = [psqiData(:, 3:5)];
+     nodePairs = [nodePairs, roi1str, roi2str, sprintf('\n')];
      Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
+     %nodePairs = [node1, roi1str, node2, roi2str sprintf('\n')];
+     %nodePairs = painnames3(I,J];
+     LM.(strcat('rois')) = [nodePairs, node1, node2];
+     % {roi1str, roi2str};
      LM.(strcat('lm', num2str(i))) = fitlm(xVars,Y);
-end
 
+end
+%nodePairs = [node1, node2];
 
 %         OUTPUT THE OVERALL F AND P-VALUES FOR EACH MODEL
-for i=1%:numel(I);
+for i=1:numel(I);
 ztbl2 = anova(LM.(strcat('lm', num2str(i))), 'summary');
 modelSummary(i, :) = ztbl2(2,4:5);
 end

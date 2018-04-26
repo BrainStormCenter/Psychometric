@@ -198,7 +198,7 @@ end
 pid = FDR(ttest_pval_DmnPre,.05);
 [I,J] = find(ttest_pval_DmnPre <= pid);
 %         NOT USING FDR
-[z1,z2] = find(ttest_pval_DmnPre <= .05);
+[z1,z2] = find(ttest_pval_DmnPre <= .01);
 % [I J];
 
 %% Fancy code to print-out RESULTS
@@ -240,8 +240,53 @@ sprintf('\n')]
 end
 
 OUT_Text_DmnPre
+%         NEGATIVE T-VALUES = CONTROL LESS THAN PAIN GROUP
+%         WRITE OUT THE SIGNIFICANT ROI-TO-ROI CORRELATION BETWEEN GROUPS
+%dlmwrite('PainRoiTtest_PainPre.txt',OUT_Text_PainPre,'')
+whenRun = datestr(now, 'yyyy-mm-dd_HHMM');
+file_id1 = fopen([rootpath 'ROIttest_DmnPre', whenRun,'.txt'], 'w');
+fprintf(file_id1, OUT_Text_DmnPre,'');
+fclose(file_id1);
+
+figure;
+imagesc(ttest_tval_DmnPre);colorbar;colormap('jet');
 
 
+
+%              RUNNING MULTIPLE LINERAR REGRESSION USING fitlm (WITHOUT A TABLE)
+%
+%              DECALRE A STRUCT TO HOLD ALL THE RESULTS FROM THE fitlm LOOP
+LM = struct();
+% %         FOR FDR RESULTS
+% for i=1%:numel(I);
+%      node1 = I(i);
+%      node2 = J(i);
+%      xVars = [psqiData(:, 3:5)];
+%      Y = mean(squeeze(dmnzgfcccs(node1, node2, :, 1, :)), 2);
+%      LM.(strcat('lm', num2str(i))) = fitlm(xVars,Y);
+% end
+%         FOR NON-FDR RESULTS
+for i=1%:numel(z1);
+     node1 = z1(i);
+     node2 = z2(i);
+     xVars = [psqiData(:, 3:5)];
+     Y = mean(squeeze(dmnzgfcccs(node1, node2, :, 1, :)), 2);
+     LM.(strcat('lm', num2str(i))) = fitlm(xVars,Y);
+end
+
+% %         FOR FDR RESULTS
+% %         OUTPUT THE OVERALL F AND P-VALUES FOR EACH MODEL
+% for i=1%:numel(I);
+% ztbl2 = anova(LM.(strcat('lm', num2str(i))), 'summary');
+% modelSummary(i, :) = ztbl2(2,4:5);
+% end
+
+%         FOR NON-FDR RESULTS
+%         OUTPUT THE OVERALL F AND P-VALUES FOR EACH MODEL
+for i=1%:numel(z1);
+ztbl2 = anova(LM.(strcat('lm', num2str(i))), 'summary');
+modelSummary(i, :) = ztbl2(2,4:5);
+end
 
 %
 
