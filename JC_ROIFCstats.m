@@ -164,6 +164,11 @@ for node1 = 1:length(pain)
 end
 
 
+
+%{
+
+%
+
 %%           ANALYSIS #0 (3 GROUP ANOVA FOR PRE)
 %       COMPUTING 3-GROUP ANOVA FOR THE PRE-MANIPULATION RESTING STATE SCANS
 %       STEP 1 = CREATE VARIABLES OF THE MEAN CORRELATION OF ALL PAIN REGIONS
@@ -430,6 +435,27 @@ writetable(tableTtest,'t-tests.txt','Delimiter',' ');
 %%         SAVE WORKSPACE
 PainROIFCstatsOutput = ['PainROIFCstats_',datestr(now, 'yyyy-mm-dd'),'.mat']
 save(PainROIFCstatsOutput);
+
+
+
+%}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%              END SCRIPT
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 % %   Below = (HC, pre, neg vs. CLBP, pre, pos)
 % [h, p, ci, stats] = ttest2(painnet(i1, 1, 1), painnet(i2, 1, 1), ...

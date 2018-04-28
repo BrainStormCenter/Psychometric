@@ -3,6 +3,7 @@
 %
 %		CREATED BY:		JOCHEN WEBER
 %		CREATED ON:		2017-12-13
+%         MODIFIED WITH ANDY  2018_04_21
 %
 %		USAGE:			TESTING ROI CORRELATIONS ACROSS GROUPS
 %
@@ -27,20 +28,20 @@ voi = xff('/Users/jcraggs/Documents/GitHub/Psychometric/ROIs/AALmasks1.voi');
 voinames = voi.VOINames;
 
 % indices for pain
-pain = find(~cellfun('isempty', regexpi(voinames, '^Pain')));
-dmn = find(~cellfun('isempty', regexpi(voinames, '^DMN')));
-both = find(~cellfun('isempty', regexpi(voinames, '^Both')));
+painvoi = find(~cellfun('isempty', regexpi(voinames, '^Pain')));
+dmnvoi = find(~cellfun('isempty', regexpi(voinames, '^DMN')));
+bothvoi = find(~cellfun('isempty', regexpi(voinames, '^Both')));
 %voiorder = [pain; dmn];
-voiorder = [pain; dmn; both];
+voiorder = [painvoi; dmnvoi; bothvoi];
 nvs = numel(voiorder);
 
 %    DETERMINING THE NUMBER OF ROIS FOR EACH NETWORK
 painstart = 1;
-painend = length(pain);
+painend = length(painvoi);
 dmnstart = painend + 1;
-dmnend = length(pain) + length(dmn);
+dmnend = length(painvoi) + length(dmnvoi);
 bothstart = dmnend + 1;
-bothend = length(both) + length(pain) + length(dmn);
+bothend = length(bothvoi) + length(painvoi) + length(dmnvoi);
 
 %         LIST OUT THE BRAIN REGIONS IN THE PAIN AND DMN NETWORKS
 char(voinames(voiorder));
@@ -80,17 +81,19 @@ glistd = slistd(g123, :);
 rlistd = glistd(:, 4:11);
 rlistd2 = glistd(:,[1 4:11]); % KEEP SUBJECT NUMBERS
 
-% create cc arrays
-%   THESE ARE THE CROSS CORRELATIONS OF ALL THE BRAIN REGIONS LISTED IN THE VOI FILE
+%         GROUP NAMES
+gpNames = {'HC','CLBP','FM'}; % ALL THREE GROUPS
+gpNames2 = {'HC','Pain'};     % GROUP NAMES COLLAPSED ACROSS CP GROUPS
+
+%                             create cc arrays
+%         THESE ARE THE CROSS CORRELATIONS OF ALL THE BRAIN REGIONS LISTED IN THE VOI FILE
 afcccs = cat(3, fcccs{:});
 gfcccs = reshape(afcccs(voiorder, voiorder, rlistd(:)), [nvs, nvs, ns, 2, 2, 2]);
-
-% fisher transform
+%         fisher transform
 zgfcccs = n.fisherr2z(gfcccs);
 zgfcccs(isinf(zgfcccs)) = 0;
-
-% average over first and second run of each half-session
-%   THESE ARE THE 'PRE' MANIPULATION RESTING STATE SCANS
+%         average over first and second run of each half-session
+%         THESE ARE THE 'PRE' MANIPULATION RESTING STATE SCANS
 zgfcccs = squeeze(mean(zgfcccs, 4));
 
 %    this leaves 5-dimensions
@@ -103,7 +106,7 @@ zgfcccs = squeeze(mean(zgfcccs, 4));
 %         to split into within network matrices
 %         THESE ARE ARRAYS OF CROSS CORRELATIONS AMONG REGIONS IN EACH NETWORK
 %         THE ARRAYS ARE ORGANIZED AS (REGIONS^REGIONS, ALL SUBJECTS, PRE & POST, POS & NEG)
-
+%
 %         THESE ARE THE CCs MATRICIES OF BRAIN REGIONS FOR EACH SUBJECT IN EACH ROI SET
 bothzgfcccs = zgfcccs(bothstart:bothend, bothstart:bothend, :, :, :);
 painzgfcccs = zgfcccs(painstart:painend, painstart:painend, :, :, :);
@@ -111,10 +114,9 @@ dmnzgfcccs = zgfcccs(dmnstart:dmnend, dmnstart:dmnend, :, :, :);
 
 %              average connectivity strengths
 %              THESE ARE THE AVERAGE CCs FOR ALL THE SUBJECTS ACROSS THE PAIN REGIONS
-painnet = squeeze(sum(sum(painzgfcccs, 1), 2)) ./ (length(pain) * (length(pain) -1));
+painnet = squeeze(sum(sum(painzgfcccs, 1), 2)) ./ (length(painvoi) * (length(painvoi) -1));
 %              THESE ARE THE CCs FOR ALL THE SUBJECTS ACROSS THE DMN REGIONS
-dmnnet = squeeze(sum(sum(dmnzgfcccs, 1), 2)) ./ (length(dmn) * (length(dmn) -1));
-%
+dmnnet = squeeze(sum(sum(dmnzgfcccs, 1), 2)) ./ (length(dmnvoi) * (length(dmnvoi) -1));
 %
 %              CREATE MATRIX OF PAIN CC'S AND BEHAVIORAL DATA
 %              RESHAPE THE PAINNET CC'S, COLUMNS 1&2=PRE/POST; COLUMNS 3&4=NEG/POS
@@ -130,19 +132,18 @@ PSQIandPainCCs = [psqiData,sub_by_painCCs];
 %         - the next ", 1" is the "pre" (treatment) selection
 %         - the next ", 1" is the "neg session" selection
 %
-%         COMPUTING THE ANOVA FOR ALL PAIRS OF PAIN ROIS
-%         DECLARE ARRAY TO STORE ANOVA RESULTS
-pain_anovaresults_effect = zeros(length(pain),length(pain));
-pain_anovaresults_pvalue = zeros(length(pain),length(pain));
 
-%%        ANALYSIS #1 (3 GROUP ANOVA FOR PRE - PAIN REGIONS)
-%         COMPUTING 3-GROUP ANOVA FOR THE PRE-MANIPULATION RESTING STATE SCANS
+%{
+%                        GROUP COMPARISONS OF CC AVERAGED OVER ALL PAIN ROIs
+%              DECLARE ARRAY TO STORE ANOVA RESULTS
+Pain.Pre.Anova.overall = struct();
+%              ANALYSIS #1 (3 GROUP ANOVA FOR PRE - PAIN REGIONS)
+%                   COMPUTING 3-GROUP ANOVA FOR THE PRE-MANIPULATION RESTING STATE SCANS
 %              STEP 1 = CREATE VARIABLES OF THE MEAN CORRELATION OF ALL PAIN REGIONS
 %                   FOR EACH GROUP OF THE PRE SCANS ACROSS BOTH VISITS
 HC_PainPre = mean(painnet(i1,1,:),3);        % MEAN OF HC
 CLBP_PainPre = mean(painnet(i2,1,:),3);      % MEAN OF CLBP
 FM_PainPre = mean(painnet(i3,1,:),3);        % MEAN OF FM
-gpNames = {'HC','CLBP','FM'};               % VARIABLE OF GROUP NAMES
 %              STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
 %                   THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
 %                   IDENTIFY THE LARGEST GROUP
@@ -154,24 +155,89 @@ A(1:length(CLBP_PainPre),2) = CLBP_PainPre;   % CLBP TO COLUMN 2
 A(1:length(FM_PainPre),3) = FM_PainPre;       % FM TO COLUMN 3
 %              STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
 %                   CREATE A TABLE OF OVERALL F-TEST
-[p_PainPre,tbl_PainPre,stats_PainPre] = anova1(A,gpNames);      % TABLE OF OVERALL RESULTS
-ftestNamesPain = tbl_PainPre(1,:);                  % VARIABLE NAMES FOR THE TABLE
-ftestNamesPain{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
-tableFtestPainPre = array2table(tbl_PainPre(2:4,:),'VariableNames',ftestNamesPain);
-figure;
-%[~,~,stats] = anova1(A,gpNames);        % I AM NOT SURE WHAT THIS DOES ...
-[c,~,~,gnames] = multcompare(stats_PainPre);    % EVALUATE MULTIPLE COMPARISONS
-%       STEP 4 = PREPARING STATS OUTPUT
-%       CREATE AN ARRAY OF ANOVA OUTPUT
-anovaOutputPainPre = [gnames(c(:,1)), gnames(c(:,2)), num2cell(c(:,3:6))];
-%       INITIAL ORDER OF OUTPUT FROM THE MULTICOMPARISON STEP
-%       COLUMNS 1-6 =  {'gp1','gp2','lCI','gpDiff','uCI','pval'}
-%       CHANGING THE VARIABLE ORDER IN THE OUTPUT ARRAY TO
-%       COLUMNS 1-6 = {'gp1','gp2', 'pval','gpDiff','lCI','uCI'}) AND THEN
-%       CREATE A TABLE OF THE MULTICOMPARISON OUTPUT
-anovaOutputPainPre = anovaOutputPainPre(:,[1 2 6 4 3 5]);
-tableAnovaPainPre = array2table(anovaOutputPainPre, 'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
+[Pain.Pre.Anova.overall.p_PainPre,Pain.Pre.Anova.overall.modelSummary_PainPre,Pain.Pre.Anova.overall.stats_PainPre] ...
+     = anova1(A,gpNames);
 %
+%              THIS CONVERTS THE ABOVE RESULTS TO TABLE FORMAT
+Pain.Pre.Anova.overall.ftest_tblHdr = Pain.Pre.Anova.overall.modelSummary_PainPre(1,:);    % VARIABLE NAMES FOR THE TABLE
+Pain.Pre.Anova.overall.ftest_tblHdr{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
+Pain.Pre.Anova.overall.overallFtest = array2table(Pain.Pre.Anova.overall.modelSummary_PainPre(2:4,:), ...
+     'VariableNames',Pain.Pre.Anova.overall.ftest_tblHdr);
+figure;
+%              POST-HOC GROUP COMPARISONS
+[Pain.Pre.Anova.overall.multcompare.c,~,~,Pain.Pre.Anova.overall.multcompare.gnames] = ...
+     multcompare(Pain.Pre.Anova.overall.stats_PainPre);    % EVALUATE MULTIPLE COMPARISONS
+%              STEP 4 = PREPARING STATS OUTPUT
+%                   CREATE AN ARRAY OF ANOVA OUTPUT
+Pain.Pre.Anova.overall.multcompare.multout_PainPre = ...
+     [Pain.Pre.Anova.overall.multcompare.gnames(Pain.Pre.Anova.overall.multcompare.c(:,1)), ...
+     Pain.Pre.Anova.overall.multcompare.gnames(Pain.Pre.Anova.overall.multcompare.c(:,2)), ...
+     num2cell(Pain.Pre.Anova.overall.multcompare.c(:,3:6))];
+%              INITIAL ORDER OF OUTPUT FROM THE MULTICOMPARISON STEP
+%              COLUMNS 1-6 =  {'gp1','gp2','lCI','gpDiff','uCI','pval'}
+%              CHANGING THE VARIABLE ORDER IN THE OUTPUT ARRAY TO
+%              COLUMNS 1-6 = {'gp1','gp2', 'pval','gpDiff','lCI','uCI'}) AND THEN
+%              CREATE A TABLE OF THE MULTICOMPARISON OUTPUT
+Pain.Pre.Anova.overall.multcompare.multout_PainPre = Pain.Pre.Anova.overall.multcompare.multout_PainPre(:,[1 2 6 4 3 5]);
+Pain.Pre.Anova.overall.multcompare.multoutTbl_PainPre = ...
+     array2table(Pain.Pre.Anova.overall.multcompare.multout_PainPre, ...
+     'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
+%
+%
+%
+%}
+
+
+
+
+
+
+
+
+%              ANOVA COMPARING GROUPS ON THE REGION-TO-REGION CROSS-CORRELATIONS
+% Anova_Overall_PainPre.pain_anovaresults_effect = zeros(length(painvoi),length(painvoi));
+% Anova_Overall_PainPre.pain_anovaresults_pvalue = zeros(length(painvoi),length(painvoi));
+
+for node1 = 1%:length(painvoi)         % PAIN REGION #1
+     for node2 = 2%1:length(painvoi)    % PAIN REGION #1
+        prePainHC = mean(squeeze(painzgfcccs(node1, node2, i1, 1, :)), 2);
+        prePainCLBP = mean(squeeze(painzgfcccs(node1, node2, i2, 1, :)), 2);
+        prePainFM = mean(squeeze(painzgfcccs(node1, node2, i3, 1, :)), 2);
+        prePainGps = mean(squeeze(painzgfcccs(node1, node2, i4, 1, :)), 2);     % BOTH CP GROUPS
+        gpNames = {'HC','CLBP','FM'};           % VARIABLE: GROUP NAMES
+
+%       STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
+%       THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
+%       IDENTIFY THE LARGEST GROUP
+        A = max([length(i1),length(i2),length(i3)]);
+        A = zeros(A,3);    % INITIALIZE ARRAY OF ALL ZEROS  FOR LARGEST GROUP
+        A(A == 0) = NaN;    % CONVERT ALL '0' TO 'NaN' (MISSING VALUES)
+        A(1:length(prePainHC),1) = prePainHC;       % HC TO COLUMN 1
+        A(1:length(prePainCLBP),2) = prePainCLBP;   % CLBP TO COLUMN 2
+        A(1:length(prePainFM),3) = prePainFM;       % FM TO COLUMN 3
+%       STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
+%       CREATE A TABLE OF OVERALL F-TEST
+        [p,tbl,stats] = anova1(A,gpNames, 'summary');      % TABLE OF OVERALL RESULTS
+        % [H_PainPre,P_PainPre,CI_PainPre,STATS_PainPre] = ttest2(prePainHC,prePainGps);           % 2 SAMPLE T-TEST
+        ftestNames = tbl(1,:);                  % VARIABLE NAMES FOR THE TABLE
+        ftestNames{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
+        tableFtest = array2table(tbl(2:4,:),'VariableNames',ftestNames);
+        pain_anovaresults_effect(node1, node2) = cell2mat(tbl(2,5)); % THESE ARE F-VALUES
+        pain_anovaresults_pvalue(node1, node2) = p;
+        % ttest_tval_PainPre(node1, node2) = STATS_PainPre.tstat; % tstat
+        % ttest_pval_PainPre(node1, node2) = P_PainPre; % pvalue
+
+    end
+end
+
+
+%
+
+
+
+%{
+
+
 %%              T-TEST COMPARING GROUPS ON THE REGION-TO-REGION CROSS-CORRELATIONS
 for node1 = 1:length(pain)         % PAIN REGION #1
      for node2 = 1:length(pain)    % PAIN REGION #1
@@ -298,6 +364,8 @@ for i=1:numel(I);
   DUMMY_ROI1{i} = roi1str;
   DUMMY_ROI2{i} = roi2str;
 end
+
+
 LM_PainPre.modelSummary.roi1 = DUMMY_ROI1';
 LM_PainPre.modelSummary.roi2 = DUMMY_ROI2';
 LM_PainPre.modelSummary.model = (1:numel(I))';
@@ -308,9 +376,15 @@ LM_PainPre.modelSummary = LM_PainPre.modelSummary(:, [8 3 2 1 4 5 6 7]);
 %
 %
 %
-%
+%}
+
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%   END SCRIPT     %%%%%%%%%%%%%%%%%%%%%%
 
+
+%{
 %%%%%%%%%%%%%%%%%%%%%%   OTHER ANALYSES    %%%%%%%%%%%%%%%%%%%%%%
 % Method A:  Simple linear regression
 % NOTE: VERY Simple
@@ -615,3 +689,4 @@ LM_PainPre.modelSummary = LM_PainPre.modelSummary(:, [8 3 2 1 4 5 6 7]);
 
 %pain_anovaresults_effect = zeros(16, 16);
 %pain_anovaresults_pvalue = zeros(16, 16);
+%}
