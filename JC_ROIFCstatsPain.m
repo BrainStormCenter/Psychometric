@@ -7,7 +7,7 @@
 %
 %		USAGE:			TESTING ROI CORRELATIONS ACROSS GROUPS
 %
-%         LATEST MODIFICATION:     2018_04_27
+%         LATEST MODIFICATION:     2018_05_01
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
@@ -133,7 +133,9 @@ PSQIandPainCCs = [psqiData,sub_by_painCCs];
 %         - the next ", 1" is the "neg session" selection
 %
 
-%{
+%%   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%        THIS ANALYSIS (ENDS ON LINE 187 IS DONE AS OF May 1, 2018) %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                        GROUP COMPARISONS OF CC AVERAGED OVER ALL PAIN ROIs
 %              DECLARE ARRAY TO STORE ANOVA RESULTS
 Pain.Pre.Anova.overall = struct();
@@ -184,56 +186,158 @@ Pain.Pre.Anova.overall.multcompare.multoutTbl_PainPre = ...
      'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
 %
 %
+%%
 %
-%}
-
-
-
-
-
-
-
+%
 
 %              ANOVA COMPARING GROUPS ON THE REGION-TO-REGION CROSS-CORRELATIONS
 % Anova_Overall_PainPre.pain_anovaresults_effect = zeros(length(painvoi),length(painvoi));
 % Anova_Overall_PainPre.pain_anovaresults_pvalue = zeros(length(painvoi),length(painvoi));
 
-for node1 = 1%:length(painvoi)         % PAIN REGION #1
-     for node2 = 2%1:length(painvoi)    % PAIN REGION #1
+% computing the ANOVA for all pairs
+multiTest = struct();
+multiTest.OUT_TEXT2 = [];
+
+multiTest.pain_anovaresults_Fvals = zeros(length(painvoi),length(painvoi));
+multiTest.pain_anovaresults_pvals = zeros(length(painvoi),length(painvoi));
+
+multiTest.OUT_TEXT2 = [multiTest.OUT_TEXT2 'These ROIs CCs differ between groups:' sprintf('\t') sprintf('\n')];
+for node1 = 1:length(painvoi)         % PAIN REGION #1
+     for node2 = 1:length(painvoi)    % PAIN REGION #1
         prePainHC = mean(squeeze(painzgfcccs(node1, node2, i1, 1, :)), 2);
         prePainCLBP = mean(squeeze(painzgfcccs(node1, node2, i2, 1, :)), 2);
         prePainFM = mean(squeeze(painzgfcccs(node1, node2, i3, 1, :)), 2);
         prePainGps = mean(squeeze(painzgfcccs(node1, node2, i4, 1, :)), 2);     % BOTH CP GROUPS
         gpNames = {'HC','CLBP','FM'};           % VARIABLE: GROUP NAMES
+        roi1str = painnames3(node1,:);
+        roi2str = painnames3(node2,:);
 
-%       STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
-%       THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
-%       IDENTIFY THE LARGEST GROUP
+%              STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
+%                   THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
+%                   IDENTIFY THE LARGEST GROUP
         A = max([length(i1),length(i2),length(i3)]);
         A = zeros(A,3);    % INITIALIZE ARRAY OF ALL ZEROS  FOR LARGEST GROUP
         A(A == 0) = NaN;    % CONVERT ALL '0' TO 'NaN' (MISSING VALUES)
         A(1:length(prePainHC),1) = prePainHC;       % HC TO COLUMN 1
         A(1:length(prePainCLBP),2) = prePainCLBP;   % CLBP TO COLUMN 2
         A(1:length(prePainFM),3) = prePainFM;       % FM TO COLUMN 3
-%       STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
-%       CREATE A TABLE OF OVERALL F-TEST
-        [p,tbl,stats] = anova1(A,gpNames, 'summary');      % TABLE OF OVERALL RESULTS
+%              STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
+%                   CREATE A TABLE OF OVERALL F-TEST
+        [multiTest.p,multiTest.tbl,multiTest.stats] = anova1(A,gpNames, 'off');      % TABLE OF OVERALL RESULTS
         % [H_PainPre,P_PainPre,CI_PainPre,STATS_PainPre] = ttest2(prePainHC,prePainGps);           % 2 SAMPLE T-TEST
-        ftestNames = tbl(1,:);                  % VARIABLE NAMES FOR THE TABLE
-        ftestNames{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
-        tableFtest = array2table(tbl(2:4,:),'VariableNames',ftestNames);
-        pain_anovaresults_effect(node1, node2) = cell2mat(tbl(2,5)); % THESE ARE F-VALUES
-        pain_anovaresults_pvalue(node1, node2) = p;
+        multiTest.ftestNames = multiTest.tbl(1,:);                  % VARIABLE NAMES FOR THE TABLE
+        multiTest.ftestNames{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
+        multiTest.tableFtest = array2table(multiTest.tbl(2:4,:),'VariableNames',multiTest.ftestNames);
+        multiTest.pain_anovaresults_Fvals(node1, node2) = cell2mat(multiTest.tbl(2,5)); % THESE ARE F-VALUES
+        multiTest.pain_anovaresults_pvals(node1, node2) = multiTest.p;
         % ttest_tval_PainPre(node1, node2) = STATS_PainPre.tstat; % tstat
         % ttest_pval_PainPre(node1, node2) = P_PainPre; % pvalue
-
+        % [c,~,~,gnames] = multcompare(stats);    % EVALUATE MULTIPLE COMPARISONS
+        % multcomparePreOutput = [gnames(c(:,1)), gnames(c(:,2)), num2cell(c(:,3:6))];
+        % multcomparePreOutput = multcomparePreOutput(:,[1 2 6 4 3 5]);
+        % tableAnovaPre = array2table(multcomparePreOutput, 'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
+       % multiTest.OUT_TEXT2 = [multiTest.OUT_TEXT2 roi1str 'with ' roi2str 'new line' sprintf('\n')];
     end
+
 end
 
+multiTest.OUT_TEXT2
+
+%
+for i = 1:24
+     for j=i+1:24
+          multiTest.pain_anovaresults_pvals(i,j)=NaN;
+          multiTest.pain_anovaresults_pvals(i,j)=NaN;
+     end
+end
+%
+[x,y] = find(multiTest.pain_anovaresults_pvals < 0.005);
+[x y]
+
+OUT_TEXT1 = [];
+% Now, add strings to that OUT_TEXT
+% and you can use the "sprintf" command for syntax like tabs, line breaks
+
+OUT_TEXT1 = [OUT_TEXT1 'These ROIs correlations differ between groups:' sprintf('\t') sprintf('\n')];
+for i=1:numel(x)
+     roi1num = num2str(x(i));
+     roi1str = painnames3(x(i),:);
+     roi2num = num2str(y(i));
+     roi2str = painnames3(y(i),:);
+     this_tval1 = '20'; % pain_ttest_tval(I(i),J(i));
+     this_pval1 = '30'; %pain_ttest_pval(I(i),J(i));
+     OUT_TEXT1 = [OUT_TEXT1 roi1str 'with ' roi2str ' (#' roi1num ') <-->' ' (#' roi2num ')' sprintf('\n')];
+end
+
+OUT_TEXT1
 
 %
 
 
+for i=1:numel(x);
+     node1 = x(i);
+     node2 = y(i);
+     prePainHC = mean(squeeze(painzgfcccs(node1, node2, i1, 1, :)), 2);
+     prePainCLBP = mean(squeeze(painzgfcccs(node1, node2, i2, 1, :)), 2);
+     prePainFM = mean(squeeze(painzgfcccs(node1, node2, i3, 1, :)), 2);
+     gpNames = {'HC','CLBP','FM'};           % VARIABLE: GROUP NAMES
+%              STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
+%                   THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
+%                   IDENTIFY THE LARGEST GROUP
+     A = max([length(i1),length(i2),length(i3)]);
+     A = zeros(A,3);    % INITIALIZE ARRAY OF ALL ZEROS  FOR LARGEST GROUP
+     A(A == 0) = NaN;    % CONVERT ALL '0' TO 'NaN' (MISSING VALUES)
+     A(1:length(prePainHC),1) = prePainHC;       % HC TO COLUMN 1
+     A(1:length(prePainCLBP),2) = prePainCLBP;   % CLBP TO COLUMN 2
+     A(1:length(prePainFM),3) = prePainFM;       % FM TO COLUMN 3
+%              STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
+%                   CREATE A TABLE OF OVERALL F-TEST
+     [p2,tbl2,stats2] = anova1(A,gpNames, 'summary');      % TABLE OF OVERALL RESULTS
+     ftestNames2 = tbl2(1,:);                  % VARIABLE NAMES FOR THE TABLE
+     ftestNames2{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
+     tableFtest2 = array2table(tbl2(2:4,:),'VariableNames',ftestNames2);
+     pain_anovaresults_Fvals2(node1, node2) = cell2mat(tbl2(2,5)); % THESE ARE F-VALUES
+     pain_anovaresults_pvals2(node1, node2) = p2;
+
+     %figure;
+
+     [multiTest.(strcat('multi', num2str(i))).c,multiTest.(strcat('multi', num2str(i))).m, ...
+          multiTest.(strcat('multi', num2str(i))).h,multiTest.(strcat('multi', num2str(i))).gpNames] ...
+          = multcompare(stats2, 'CType','bonferroni');    % EVALUATE MULTIPLE COMPARISONS
+
+     multiTest.(strcat('multi', num2str(i))).results = ...
+          [multiTest.(strcat('multi', num2str(i))).gpNames(multiTest.(strcat('multi', num2str(i))).c(:,1)), ...
+          multiTest.(strcat('multi', num2str(i))).gpNames(multiTest.(strcat('multi', num2str(i))).c(:,2)), ...
+          num2cell(multiTest.(strcat('multi', num2str(i))).c(:,3:6))];
+
+     multiTest.(strcat('multi', num2str(i))).results = ...
+          multiTest.(strcat('multi', num2str(i))).results(:,[1 2 6 4 3 5]);
+
+     multiTest.(strcat('multi', num2str(i))).resultsTable = ...
+          array2table(multiTest.(strcat('multi', num2str(i))).results, ...
+          'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
+
+
+      % [multiTest.multi1.c,multiTest.multi1.m,multiTest.multi1.h,multiTest.multi1.nms] = multcompare(stats2);
+%     multiTest.(strcat('multi', num2str(i))).results = [gpNames(multiTest.(strcat('multi', num2str(i))).c(:,1))] %, ...
+     % gpNames(multiTest.(strcat('multi', num2str(i))).c(:,2)), ...
+     % num2cell(multiTest.(strcat('multi', num2str(i))).c(:,3:6)];
+     % bob = [gnames(multiTest.(strcat('multi', num2str(i))).c(:,1)), ...
+     % gnames(multiTest.(strcat('multi', num2str(i))).c(:,2)), ...
+     % num2cell(multiTest.(strcat('multi', num2str(i))).c(:,3:6)];
+end
+
+%}
+
+% pid = FDR(pain_anovaresults_pvals,.05);
+% [x,y] = find(pain_anovaresults_pvals <= pid);
+% [x y];
+
+
+
+%
+
+%}
 
 %{
 
