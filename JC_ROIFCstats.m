@@ -163,7 +163,12 @@ for node1 = 1:length(pain)
     end
 end
 
-
+for i = 1:24
+     for j=i+1:24
+          pain_anovaresults_pvalue(i,j)=NaN;
+          pain_anovaresults_pvalue(i,j)=NaN;
+     end
+end
 
 %{
 
