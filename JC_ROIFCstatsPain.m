@@ -190,18 +190,18 @@ Pain.Pre.Anova.overall.multcompare.multoutTbl_PainPre = ...
 %
 %
 
-%              ANOVA COMPARING GROUPS ON THE REGION-TO-REGION CROSS-CORRELATIONS
+%              ANOVA COMPARING GROUPS ON ALL OF THE REGION-TO-REGION CROSS-CORRELATIONS
 % Anova_Overall_PainPre.pain_anovaresults_effect = zeros(length(painvoi),length(painvoi));
 % Anova_Overall_PainPre.pain_anovaresults_pvalue = zeros(length(painvoi),length(painvoi));
 
 % computing the ANOVA for all pairs
-multiTest = struct();
-multiTest.OUT_TEXT2 = [];
+Pain.Pre.roi2roi = struct();
+%Pain.Pre.roi2roi.anova_output1 = [];
 
-multiTest.pain_anovaresults_Fvals = zeros(length(painvoi),length(painvoi));
-multiTest.pain_anovaresults_pvals = zeros(length(painvoi),length(painvoi));
+Pain.Pre.roi2roi.anova_fvals = zeros(length(painvoi),length(painvoi));
+Pain.Pre.roi2roi.anova_pvals = zeros(length(painvoi),length(painvoi));
 
-multiTest.OUT_TEXT2 = [multiTest.OUT_TEXT2 'These ROIs CCs differ between groups:' sprintf('\t') sprintf('\n')];
+%Pain.Pre.roi2roi.anova_output1 = [Pain.Pre.roi2roi.anova_output1 'These ROIs CCs differ between groups:' sprintf('\t') sprintf('\n')];
 for node1 = 1:length(painvoi)         % PAIN REGION #1
      for node2 = 1:length(painvoi)    % PAIN REGION #1
         prePainHC = mean(squeeze(painzgfcccs(node1, node2, i1, 1, :)), 2);
@@ -211,7 +211,6 @@ for node1 = 1:length(painvoi)         % PAIN REGION #1
         gpNames = {'HC','CLBP','FM'};           % VARIABLE: GROUP NAMES
         roi1str = painnames3(node1,:);
         roi2str = painnames3(node2,:);
-
 %              STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
 %                   THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
 %                   IDENTIFY THE LARGEST GROUP
@@ -223,13 +222,13 @@ for node1 = 1:length(painvoi)         % PAIN REGION #1
         A(1:length(prePainFM),3) = prePainFM;       % FM TO COLUMN 3
 %              STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
 %                   CREATE A TABLE OF OVERALL F-TEST
-        [multiTest.p,multiTest.tbl,multiTest.stats] = anova1(A,gpNames, 'off');      % TABLE OF OVERALL RESULTS
+        [Pain.Pre.roi2roi.p,Pain.Pre.roi2roi.tbl,Pain.Pre.roi2roi.stats] = anova1(A,gpNames, 'off');      % TABLE OF OVERALL RESULTS
         % [H_PainPre,P_PainPre,CI_PainPre,STATS_PainPre] = ttest2(prePainHC,prePainGps);           % 2 SAMPLE T-TEST
-        multiTest.ftestNames = multiTest.tbl(1,:);                  % VARIABLE NAMES FOR THE TABLE
-        multiTest.ftestNames{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
-        multiTest.tableFtest = array2table(multiTest.tbl(2:4,:),'VariableNames',multiTest.ftestNames);
-        multiTest.pain_anovaresults_Fvals(node1, node2) = cell2mat(multiTest.tbl(2,5)); % THESE ARE F-VALUES
-        multiTest.pain_anovaresults_pvals(node1, node2) = multiTest.p;
+        Pain.Pre.roi2roi.ftestHdr = Pain.Pre.roi2roi.tbl(1,:);        % VARIABLE NAMES FOR THE TABLE
+        Pain.Pre.roi2roi.ftestHdr{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
+        Pain.Pre.roi2roi.ftestTable = array2table(Pain.Pre.roi2roi.tbl(2:4,:),'VariableNames',Pain.Pre.roi2roi.ftestHdr);
+        Pain.Pre.roi2roi.anova_fvals(node1, node2) = cell2mat(Pain.Pre.roi2roi.tbl(2,5)); % THESE ARE F-VALUES
+        Pain.Pre.roi2roi.anova_pvals(node1, node2) = Pain.Pre.roi2roi.p;
         % ttest_tval_PainPre(node1, node2) = STATS_PainPre.tstat; % tstat
         % ttest_pval_PainPre(node1, node2) = P_PainPre; % pvalue
         % [c,~,~,gnames] = multcompare(stats);    % EVALUATE MULTIPLE COMPARISONS
@@ -238,41 +237,50 @@ for node1 = 1:length(painvoi)         % PAIN REGION #1
         % tableAnovaPre = array2table(multcomparePreOutput, 'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
        % multiTest.OUT_TEXT2 = [multiTest.OUT_TEXT2 roi1str 'with ' roi2str 'new line' sprintf('\n')];
     end
-
 end
 
-multiTest.OUT_TEXT2
+% Pain.Pre.roi2roi.anova_output1
 
 %
-for i = 1:24
-     for j=i+1:24
-          multiTest.pain_anovaresults_pvals(i,j)=NaN;
-          multiTest.pain_anovaresults_pvals(i,j)=NaN;
+for i = 1:length(painvoi)
+     for j=i+1:length(painvoi)
+          Pain.Pre.roi2roi.anova_pvals(i,j)=NaN;
+          Pain.Pre.roi2roi.anova_pvals(i,j)=NaN;
+          Pain.Pre.roi2roi.anova_fvals(i,j)=NaN;
+          Pain.Pre.roi2roi.anova_fvals(i,j)=NaN;
      end
 end
 %
-[x,y] = find(multiTest.pain_anovaresults_pvals < 0.005);
+sigpval = 0.005;
+[x,y] = find(Pain.Pre.roi2roi.anova_pvals < sigpval);
 [x y]
 
-OUT_TEXT1 = [];
+Pain.Pre.roi2roi.SigRoi2RoiCCs = [];
 % Now, add strings to that OUT_TEXT
 % and you can use the "sprintf" command for syntax like tabs, line breaks
 
-OUT_TEXT1 = [OUT_TEXT1 'These ROIs correlations differ between groups:' sprintf('\t') sprintf('\n')];
+Pain.Pre.roi2roi.SigRoi2RoiCCs = [Pain.Pre.roi2roi.SigRoi2RoiCCs ...
+     'There are significant group difference in these ROI-to_ROI CCs:' sprintf('\t') sprintf('\n')];
 for i=1:numel(x)
+     pairNum = num2str(i);
      roi1num = num2str(x(i));
      roi1str = painnames3(x(i),:);
      roi2num = num2str(y(i));
      roi2str = painnames3(y(i),:);
-     this_tval1 = '20'; % pain_ttest_tval(I(i),J(i));
-     this_pval1 = '30'; %pain_ttest_pval(I(i),J(i));
-     OUT_TEXT1 = [OUT_TEXT1 roi1str 'with ' roi2str ' (#' roi1num ') <-->' ' (#' roi2num ')' sprintf('\n')];
+     %this_tval1 = '20'; % pain_ttest_tval(I(i),J(i));
+     this_pval1 = Pain.Pre.roi2roi.anova_pvals(x(i),y(i));
+     this_fval1 = Pain.Pre.roi2roi.anova_fvals(x(i),y(i));
+     Pain.Pre.roi2roi.SigRoi2RoiCCs = [Pain.Pre.roi2roi.SigRoi2RoiCCs pairNum, '. ' roi1str 'with ' roi2str ...
+          sprintf('\t') '(#' roi1num ') <-->' ' (#' roi2num ')  ' sprintf('\t') ...
+          'f-val: ' num2str(this_fval1) sprintf('\t') 'p-val: ' sprintf('%0.04f',this_pval1) sprintf('\n')];
 end
 
-OUT_TEXT1
-
+Pain.Pre.roi2roi.SigRoi2RoiCCs
+Pain.Pre.SigRoi2RoiCCs = Pain.Pre.roi2roi.SigRoi2RoiCCs;
 %
-
+%%   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%        POST HOC ANALYSES OF THE SIGNIFICANT ROI-TO-ROI CCs        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 for i=1:numel(x);
      node1 = x(i);
@@ -292,40 +300,38 @@ for i=1:numel(x);
      A(1:length(prePainFM),3) = prePainFM;       % FM TO COLUMN 3
 %              STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
 %                   CREATE A TABLE OF OVERALL F-TEST
-     [p2,tbl2,stats2] = anova1(A,gpNames, 'summary');      % TABLE OF OVERALL RESULTS
-     ftestNames2 = tbl2(1,:);                  % VARIABLE NAMES FOR THE TABLE
-     ftestNames2{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
-     tableFtest2 = array2table(tbl2(2:4,:),'VariableNames',ftestNames2);
-     pain_anovaresults_Fvals2(node1, node2) = cell2mat(tbl2(2,5)); % THESE ARE F-VALUES
-     pain_anovaresults_pvals2(node1, node2) = p2;
+     [Pain.Pre.(strcat('posthoc', num2str(i))).model_p,Pain.Pre.(strcat('posthoc', num2str(i))).model_tbl, ...
+          Pain.Pre.(strcat('posthoc', num2str(i))).model_stats] = anova1(A,gpNames, 'off');  % TABLE OF OVERALL RESULTS
+     %              THIS CONVERTS THE ABOVE RESULTS TO TABLE FORMAT
+     Pain.Pre.(strcat('posthoc', num2str(i))).ftest_tblHdr = Pain.Pre.(strcat('posthoc', num2str(i))).model_tbl(1,:);  % VARIABLE NAMES FOR THE TABLE
+     Pain.Pre.(strcat('posthoc', num2str(i))).ftest_tblHdr{1,6} = 'Prob_F';    % FIX THE SYMBOL ISSUE
+     Pain.Pre.(strcat('posthoc', num2str(i))).Ftable = ...
+          array2table(Pain.Pre.(strcat('posthoc', num2str(i))).model_tbl(2:4,:), ...
+          'VariableNames', Pain.Pre.(strcat('posthoc', num2str(i))).ftest_tblHdr);
 
-     %figure;
+      Pain.Pre.ph_Fvals2(node1, node2) = cell2mat(Pain.Pre.(strcat('posthoc', num2str(i))).model_tbl(2,5)); % THESE ARE F-VALUES
+      Pain.Pre.ph_Pvals2(node1, node2) = cell2mat(Pain.Pre.(strcat('posthoc', num2str(i))).model_tbl(2,6)); % THESE ARE P-VALUES
+     %
+     [Pain.Pre.(strcat('posthoc', num2str(i))).c,Pain.Pre.(strcat('posthoc', num2str(i))).m, ...
+          Pain.Pre.(strcat('posthoc', num2str(i))).h,Pain.Pre.(strcat('posthoc', num2str(i))).gpNames] ...
+          = multcompare(Pain.Pre.(strcat('posthoc', num2str(i))).model_stats, 'CType','bonferroni');    % EVALUATE MULTIPLE COMPARISONS
 
-     [multiTest.(strcat('multi', num2str(i))).c,multiTest.(strcat('multi', num2str(i))).m, ...
-          multiTest.(strcat('multi', num2str(i))).h,multiTest.(strcat('multi', num2str(i))).gpNames] ...
-          = multcompare(stats2, 'CType','bonferroni');    % EVALUATE MULTIPLE COMPARISONS
+     Pain.Pre.(strcat('posthoc', num2str(i))).results = ...
+          [Pain.Pre.(strcat('posthoc', num2str(i))).gpNames(Pain.Pre.(strcat('posthoc', num2str(i))).c(:,1)), ...
+          Pain.Pre.(strcat('posthoc', num2str(i))).gpNames(Pain.Pre.(strcat('posthoc', num2str(i))).c(:,2)), ...
+          num2cell(Pain.Pre.(strcat('posthoc', num2str(i))).c(:,3:6))];
 
-     multiTest.(strcat('multi', num2str(i))).results = ...
-          [multiTest.(strcat('multi', num2str(i))).gpNames(multiTest.(strcat('multi', num2str(i))).c(:,1)), ...
-          multiTest.(strcat('multi', num2str(i))).gpNames(multiTest.(strcat('multi', num2str(i))).c(:,2)), ...
-          num2cell(multiTest.(strcat('multi', num2str(i))).c(:,3:6))];
+     Pain.Pre.(strcat('posthoc', num2str(i))).results = ...
+          Pain.Pre.(strcat('posthoc', num2str(i))).results(:,[1 2 6 4 3 5]);
 
-     multiTest.(strcat('multi', num2str(i))).results = ...
-          multiTest.(strcat('multi', num2str(i))).results(:,[1 2 6 4 3 5]);
-
-     multiTest.(strcat('multi', num2str(i))).resultsTable = ...
-          array2table(multiTest.(strcat('multi', num2str(i))).results, ...
+     Pain.Pre.(strcat('posthoc', num2str(i))).resultsTable = ...
+          array2table(Pain.Pre.(strcat('posthoc', num2str(i))).results, ...
           'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
 
-
-      % [multiTest.multi1.c,multiTest.multi1.m,multiTest.multi1.h,multiTest.multi1.nms] = multcompare(stats2);
-%     multiTest.(strcat('multi', num2str(i))).results = [gpNames(multiTest.(strcat('multi', num2str(i))).c(:,1))] %, ...
-     % gpNames(multiTest.(strcat('multi', num2str(i))).c(:,2)), ...
-     % num2cell(multiTest.(strcat('multi', num2str(i))).c(:,3:6)];
-     % bob = [gnames(multiTest.(strcat('multi', num2str(i))).c(:,1)), ...
-     % gnames(multiTest.(strcat('multi', num2str(i))).c(:,2)), ...
-     % num2cell(multiTest.(strcat('multi', num2str(i))).c(:,3:6)];
 end
+
+
+
 
 %}
 
