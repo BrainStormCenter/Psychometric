@@ -7,7 +7,7 @@
 %
 %		USAGE:			TESTING ROI CORRELATIONS ACROSS GROUPS
 %
-%         LATEST MODIFICATION:     2018_05_02
+%         LATEST MODIFICATION:     2018_05_03
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
@@ -381,39 +381,72 @@ for i=1:numel(I)
 end
 
 Pain.Pre.ttest.ttest_results
-
-%         NEGATIVE T-VALUES = CONTROL LESS THAN PAIN GROUP
+%         NEGATIVE T-VALUES = HEALTHY CONTROL LESS THAN THE COMBINED PAIN GROUPS
+figure;
+imagesc(Pain.Pre.ttest.ttest_tval);colorbar;colormap(parula);
+%
 %         WRITE OUT THE SIGNIFICANT ROI-TO-ROI CORRELATION BETWEEN GROUPS
-%dlmwrite('PainRoiTtest_PainPre.txt',OUT_Text_PainPre,'')
 whenRun = datestr(now, 'yyyy-mm-dd_HHMM');
-% file_id1 = fopen([rootpath 'GpFCdiffs_',datestr(now, 'yyyy-mm-dd_HH:MM'),'.txt'], 'w');
 file_id2 = fopen([rootpath 'Sig_Pain_Pre_ROIttest', whenRun,'.txt'], 'w');
 fprintf(file_id2, Pain.Pre.ttest.ttest_results,'');
 fclose(file_id2);
-
-figure;
-imagesc(Pain.Pre.ttest.ttest_tval);colorbar;colormap(parula);
-%imagesc(ttest_tval_PainPre);colorbar;colormap('jet');
-
-%% Now that we have identified ROI-ROI correlations that differ between groups
-%  We want to test what behavioral variables (if any) contribute to those differences in fxnl connectivity
+%
+%
+%%   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                   NOW THAT WE HAVE IDENTIFIED ROI-ROI CORRELATIONS THAT DIFFER BETWEEN GROUPS VIA T-TEST
+%                   WE WILL USE REGRESSION ANALYSES TO SEE WHICH, IF ANY, BEHAVIORAL VARIABLES SIGNIFICANLY
+%                   CONTRIBUTE TO GROUP DIFFERENCES IN THE FUNCTIONAL CONNECTIVITY BETWEEN THE ROI PAIRS
+%                   FINISHED May 3, 2018; CODE BLOCK = LINES 408- ...
+%    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%              CREATE A HEADER FOR THE PSQI DATA MATRIX AND 'Y'
+%              'Y' WILL BE THE ROI-TO-ROI CC BEING PREDICTED IN THE ANALYSES BELOW
+%              THE FOLLOWING ARE MULTIPLE LINEAR REGRESSION USING fitlm (WITH A TABLE)
+%
+psqiPlusRoiNames2 = [psqiNames, 'Ypair'];
+%%              DECLARE STRUCT TO HOLD T-TEST RESULTS
+Pain.Pre.fitLM = struct();
+%              CREATE A HEADER FOR THE PSQI DATA MATRIX AND 'Y'
+%              'Y' WILL BE THE ROI-TO-ROI CC BEING PREDICTED IN THE ANALYSES BELOW
+%              THE FOLLOWING ARE MULTIPLE LINEAR REGRESSION USING fitlm (WITH A TABLE)
 %{
+psqiPlusRoiNames2 = [psqiNames, 'Ypair'];
+for i=1:numel(I);
+     node1 = I(i);
+     node2 = J(i);
+     % roi1num = num2str(I(i));
+     % roi2num = num2str(J(i));
+     % roi1str = painnames3(I(i),:);
+     % roi2str = painnames3(J(i),:);
+     % Ypair = strcat(roi1str,'_',roi2str);
+     % psqiPlusRoiNames = [psqiNames, Ypair];
+     Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
+     psqiPlusROI = [psqiData, Y];
+     tablePsqiPlusROI = array2table(psqiPlusROI, 'VariableNames',psqiPlusRoiNames2);
+     Pain.Pre.fitLM.(strcat('roipair.', num2str(i))) = fitlm(tablePsqiPlusROI, 'Y~TiB_hrs+SoL_min+WASO_min');
+end
+%}
+%
 
 
 psqiPlusRoiNames = [psqiNames, 'Y'];
 
-%             RUNNING MULTIPLE LINERAR REGRESSION USING fitlm (WITH A TABLE)
+%
 %
 %             DECALRE A STRUCT TO HOLD ALL THE RESULTS FROM THE fitlm LOOP
-LM_PainPre = struct();
+Pain.Pre.LM = struct();
 for i=1:numel(I);
      node1 = I(i);
      node2 = J(i);
+     roi1str = painnames3(I(i),:);
+     roi2str = painnames3(J(i),:);
+     Ypair = strcat(roi1str,'with',roi2str);
+     %psqiPlusRoiNames(1,15) = {Ypair};
      Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
      psqiPlusROI = [psqiData, Y];
      tablePsqiPlusROI = array2table(psqiPlusROI, 'VariableNames',psqiPlusRoiNames);
-     LM_PainPre.(strcat('lm', num2str(i))) = fitlm(tablePsqiPlusROI, 'Y~TiB_hrs+SoL_min+WASO_min');
+     Pain.Pre.LM.(strcat('pair_', num2str(i))) = fitlm(tablePsqiPlusROI, 'Y~TiB_hrs+SoL_min+WASO_min');
 end
+%{
 % %         OUTPUT THE OVERALL F AND P-VALUES FOR EACH MODEL
 for i=1:numel(I);
      LM_PainPre.Model = anova(LM_PainPre.(strcat('lm', num2str(i))), 'summary');
@@ -831,3 +864,9 @@ LM_PainPre.modelSummary = LM_PainPre.modelSummary(:, [8 3 2 1 4 5 6 7]);
 % OUT_Text_PainPre = [OUT_Text_PainPre roi1str '(#',roi1num,') with ',roi2str '(#', roi2num ')' ...
 % 't-score: ' num2str(PainROI_tval) ' p-value: ' sprintf('%0.05f',PainROI_pval) ...
 % sprintf('\n') ];
+
+%dlmwrite('PainRoiTtest_PainPre.txt',OUT_Text_PainPre,'')
+
+% file_id1 = fopen([rootpath 'GpFCdiffs_',datestr(now, 'yyyy-mm-dd_HH:MM'),'.txt'], 'w');
+
+%imagesc(ttest_tval_PainPre);colorbar;colormap('jet');
