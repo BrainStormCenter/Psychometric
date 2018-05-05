@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 %
 %		CREATED BY:		JOCHEN WEBER
@@ -7,9 +7,12 @@
 %
 %		USAGE:			TESTING ROI CORRELATIONS ACROSS GROUPS
 %
-%         LATEST MODIFICATION:     2018_05_03
+%         LATEST MODIFICATION:     2018_05_04
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%         AS OF May 4, 2018, THERE ARE ISSUES WITH THE PSQI DATA
+%              SUB 161 = WASO SCORE OF -30
+%              SUB 172 = SLEEP EFFICIENCY SCORE GREATER THAN 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 %       BASIC SETUP FOR ANALYSES
 % neuroelf library
@@ -66,7 +69,9 @@ dmnnames3 = char(dmnnames2);
 slistdORIG = slistd;                              % PRESERVE ORIGINAL DATA
 slistd = [slistd,struct2array(psqiStruct)];       % ADD BEHAVIORAL DATA
 
-%         find subjects in three groups
+%              find subjects in three groups
+%              COLUMN 3 IDENTIFIES SUBJECT GROUP
+%              1=HC, 2=CLBP, 3=FM
 g1 = find(slistd(:, 3) == 1 & ~any(isnan(slistd(:, 4:24)), 2));
 g2 = find(slistd(:, 3) == 2 & ~any(isnan(slistd(:, 4:24)), 2));
 g3 = find(slistd(:, 3) == 3 & ~any(isnan(slistd(:, 4:24)), 2));
@@ -79,7 +84,7 @@ i4 = [i2, i3];
 ns = numel(g123);
 glistd = slistd(g123, :);
 rlistd = glistd(:, 4:11);
-rlistd2 = glistd(:,[1 4:11]); % KEEP SUBJECT NUMBERS
+rlistd2 = glistd(:,[1 3:11]); % KEEP SUBJECT NUMBERS
 
 %         GROUP NAMES
 gpNames = {'HC','CLBP','FM'}; % ALL THREE GROUPS
@@ -121,8 +126,8 @@ dmnnet = squeeze(sum(sum(dmnzgfcccs, 1), 2)) ./ (length(dmnvoi) * (length(dmnvoi
 %              CREATE MATRIX OF PAIN CC'S AND BEHAVIORAL DATA
 %              RESHAPE THE PAINNET CC'S, COLUMNS 1&2=PRE/POST; COLUMNS 3&4=NEG/POS
 sub_by_painCCs = [painnet(:,1:2,1),painnet(:,1:2,2)];
-psqiData = glistd(:,[1 12:24]);
-psqiNames = {'ID','TiB_hrs', 'SoL_min','WASO_min','TST_hrs','SleepEfficiency','psqi_Durat','psqi_Distb', ...
+psqiData = glistd(:,[1 3 12:24]);
+psqiNames = {'ID','GP','TiB_hrs', 'SoL_min','WASO_min','TST_hrs','SleepEfficiency','psqi_Durat','psqi_Distb', ...
                'psqi_Latency','psqi_DayDys','psqi_SE','psqi_BadSQual','psqi_Meds','PSQI_total'};
 
 PSQIandPainCCs = [psqiData,sub_by_painCCs];
@@ -402,7 +407,7 @@ fclose(file_id2);
 %              'Y' WILL BE THE ROI-TO-ROI CC BEING PREDICTED IN THE ANALYSES BELOW
 %              THE FOLLOWING ARE MULTIPLE LINEAR REGRESSION USING fitlm (WITH A TABLE)
 %
-psqiPlusRoiNames2 = [psqiNames, 'Ypair'];
+%psqiPlusRoiNames2 = [psqiNames, 'Ypair'];
 %%              DECLARE STRUCT TO HOLD T-TEST RESULTS
 Pain.Pre.fitLM = struct();
 %              CREATE A HEADER FOR THE PSQI DATA MATRIX AND 'Y'
@@ -429,6 +434,9 @@ end
 
 
 psqiPlusRoiNames = [psqiNames, 'Y'];
+% psqiPlusROI = [psqiData];
+% tablePsqiPlusROI = array2table(psqiPlusROI, 'VariableNames',psqiPlusRoiNames);
+% tablePsqiPlusROI.GP = nominal(tablePsqiPlusROI.GP)
 
 %
 %
@@ -437,15 +445,60 @@ Pain.Pre.LM = struct();
 for i=1:numel(I);
      node1 = I(i);
      node2 = J(i);
-     roi1str = painnames3(I(i),:);
-     roi2str = painnames3(J(i),:);
-     Ypair = strcat(roi1str,'with',roi2str);
-     %psqiPlusRoiNames(1,15) = {Ypair};
+     roi1str = painnames2(I(i),:);
+     roi2str = painnames2(J(i),:);
+     Ypair = strcat(roi1str,'_with_',roi2str);
      Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
      psqiPlusROI = [psqiData, Y];
-     tablePsqiPlusROI = array2table(psqiPlusROI, 'VariableNames',psqiPlusRoiNames);
-     Pain.Pre.LM.(strcat('pair_', num2str(i))) = fitlm(tablePsqiPlusROI, 'Y~TiB_hrs+SoL_min+WASO_min');
+     tblPsqi_ROI = array2table(psqiPlusROI, 'VariableNames',psqiPlusRoiNames);
+     tblPsqi_ROI.GP = nominal(tblPsqi_ROI.GP);
+     tblPsqi_ROIreduced = tblPsqi_ROI(:,{'TiB_hrs','SoL_min','WASO_min','PSQI_total','GP','Y'});
+     %              LINEAR REGRESSION (fitlm)
+     Pain.Pre.LM.(strcat('LMpair_', num2str(i))) = fitlm(tblPsqi_ROIreduced, ...
+          'Y~TiB_hrs+SoL_min+WASO_min+PSQI_total+TiB_hrs*GP+SoL_min*GP+WASO_min*GP+PSQI_total*GP');
+          % 'Y~TiB_hrs+SoL_min+WASO_min+TiB_hrs*GP+SoL_min*GP+WASO_min*GP');
+
+          %         STEPWISE LINEAR REGRESSION (stepwiselm)
+     Pain.Pre.LM.(strcat('SLMpair_', num2str(i))) = stepwiselm(tblPsqi_ROIreduced, ...
+          'Y~TiB_hrs+SoL_min+WASO_min+PSQI_total+TiB_hrs*GP+SoL_min*GP+WASO_min*GP+PSQI_total*GP');
+%                   INTERCEPT ONLY MODEL (stepwiselm)
+     Pain.Pre.LM.(strcat('SLMintercept_', num2str(i))) = stepwiselm(tblPsqi_ROIreduced, ...
+          'constant', 'ResponseVar', 'Y');
+%                   INTERACTION MODEL (stepwiselm)
+     Pain.Pre.LM.(strcat('SLMinteraction_', num2str(i))) = stepwiselm(tblPsqi_ROIreduced, ...
+          'interactions', 'ResponseVar', 'Y');
+%                   QUADRATIC MODEL (stepwiselm)
+     Pain.Pre.LM.(strcat('SLMquadratic_', num2str(i))) = stepwiselm(tblPsqi_ROIreduced, ...
+          'quadratic','ResponseVar','Y','Upper','quadratic');
 end
+
+%         EVALUATE THE RSQUARED VALUES OF THE REGRESSION MODELS
+for i=1:numel(I)
+     Pain.Pre.LM.(strcat('RSq_', num2str(i))) = ...
+          [Pain.Pre.LM.(strcat('LMpair_', num2str(i))).Rsquared.Adjusted ...
+          Pain.Pre.LM.(strcat('SLMpair_', num2str(i))).Rsquared.Adjusted ...
+          Pain.Pre.LM.(strcat('SLMintercept_', num2str(i))).Rsquared.Adjusted ...
+          Pain.Pre.LM.(strcat('SLMinteraction_', num2str(i))).Rsquared.Adjusted ...
+          Pain.Pre.LM.(strcat('SLMquadratic_', num2str(i))).Rsquared.Adjusted];
+end
+
+%    zRSquared = [zmdl1.Rsquared.Adjusted, zmdl2.Rsquared.Adjusted, zmdl3.Rsquared.Adjusted]
+
+
+
+
+
+
+
+%         STEPWISE LINEAR REGRESSION
+% tablePsqiPlusROIstep = tablePsqiPlusROI(:,3:7); % SUBTABLE FOR STEPWISE REGRESSION
+% Pain.Pre.LM.(strcat('pair_'+1, num2str(i))) = stepwisefit(tablePsqiPlusROIstep,Y,'penter',0.05,'premove',0.10);
+%    TO INCLUDE COVARIATES, OR INTERACTION TERMS, CONSIDER MODIFYING THE CODE BELOW
+%         zmdl2 = fitlm(tablePsqiPlusROI, 'Y~TiB_hrs+TiB_hrs*GP')
+%    FOR DOING SCATTERPLOTS OF THE DATA CONSIDER USING THE CODE BELOW
+%         gscatter(tablePsqiPlusROI.Y,tablePsqiPlusROI.SleepEfficiency,tablePsqiPlusROI.GP,'bgr','x.o')
+
+
 %{
 % %         OUTPUT THE OVERALL F AND P-VALUES FOR EACH MODEL
 for i=1:numel(I);
