@@ -7,7 +7,7 @@
 %
 %		USAGE:			TESTING ROI CORRELATIONS ACROSS GROUPS
 %
-%         LATEST MODIFICATION:     2018_05_04
+%         LATEST MODIFICATION:     2018_05_05
 %
 %         AS OF May 4, 2018, THERE ARE ISSUES WITH THE PSQI DATA
 %              SUB 161 = WASO SCORE OF -30
@@ -90,7 +90,7 @@ rlistd2 = glistd(:,[1 3:11]); % KEEP SUBJECT NUMBERS
 gpNames = {'HC','CLBP','FM'}; % ALL THREE GROUPS
 gpNames2 = {'HC','Pain'};     % GROUP NAMES COLLAPSED ACROSS CP GROUPS
 
-%                             create cc arrays
+%                             CREATE CC ARRAYS
 %         THESE ARE THE CROSS CORRELATIONS OF ALL THE BRAIN REGIONS LISTED IN THE VOI FILE
 afcccs = cat(3, fcccs{:});
 gfcccs = reshape(afcccs(voiorder, voiorder, rlistd(:)), [nvs, nvs, ns, 2, 2, 2]);
@@ -108,6 +108,11 @@ zgfcccs = squeeze(mean(zgfcccs, 4));
 %    3 subjects (in order of groups, 1-31 HC, 32-73 CLBP, 74-90 FM)
 %    4 pre/post treatment (1 pre, 2 post)
 %    5 neg/pos session (1 neg, 2 pos)
+%         to unpack:
+%         - i1 and i2 and i3 are the indices for groups HC and CLBP and FM
+%         - the next ", 1" is the "pre" (treatment) selection
+%         - the next ", 1" is the "neg session" selection
+%
 %         to split into within network matrices
 %         THESE ARE ARRAYS OF CROSS CORRELATIONS AMONG REGIONS IN EACH NETWORK
 %         THE ARRAYS ARE ORGANIZED AS (REGIONS^REGIONS, ALL SUBJECTS, PRE & POST, POS & NEG)
@@ -130,18 +135,12 @@ psqiData = glistd(:,[1 3 12:24]);
 psqiNames = {'ID','GP','TiB_hrs', 'SoL_min','WASO_min','TST_hrs','SleepEfficiency','psqi_Durat','psqi_Distb', ...
                'psqi_Latency','psqi_DayDys','psqi_SE','psqi_BadSQual','psqi_Meds','PSQI_total'};
 
-PSQIandPainCCs = [psqiData,sub_by_painCCs];
-
-%         to unpack:
-%         - i1 and i2 and i3 are the indices for groups HC and CLBP and FM
-%         - the next ", 1" is the "pre" (treatment) selection
-%         - the next ", 1" is the "neg session" selection
-%
-
-%%   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+PSQIandPainCCs = [psqiData,sub_by_painCCs];  % WHY DID I MAKE THIS?
+%%
+%   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                   THE ANOVA LOOKING AT THE OVERALL MAIN EFFECT OF GROUP
 %                   CCS AVERAGED ACROSS ALL PAIN ROIS; FOR THE PRE-MOOD MANIPULATION RESTING STATE SCANS
-%                   FINISHED May 1, 2018; CODE BLOCK = LINES 141-186
+%                   FINISHED May 1, 2018; CODE BLOCK = LINES 145-188
 %    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %              DECLARE ARRAY TO STORE ANOVA RESULTS
 Pain.Pre.Anova.overall = struct();
@@ -189,10 +188,10 @@ Pain.Pre.Anova.overall.multcompare.multoutTbl_PainPre = ...
      'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
 %
 %%
-%%   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                   ANOVAS TESTING FOR A MAIN EFFECT OF GROUP ON ALL PAIN ROI PAIRS
 %                   FOR THE PRE CONDITION ONLY
-%                   FINISHED May 2, 2018; CODE BLOCK = LINES 193-261
+%                   FINISHED May 2, 2018; CODE BLOCK = LINES 196-273
 %    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %              DECLARE A STRUCT TO HOLD THE RESULTS
 Pain.Pre.roi2roi = struct();
@@ -273,10 +272,10 @@ fprintf(file_id1, Pain.Pre.roi2roi.SigRoi2RoiCCs,'');
 fclose(file_id1);
 %
 %%
-%%   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                   FOLLOW UP POST HOC TESTING FOR THE SIGNIFICANT ROI PAIRS IDENTIFIED ABOVE
 %                   FOR THE PRE CONDITION ONLY
-%                   FINISHED May 2, 2018; CODE BLOCK = LINES 276-323
+%                   FINISHED May 2, 2018; CODE BLOCK = LINES 280-327
 %    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %              DECLARE A STRUCT TO HOLD THE RESULTS
 Pain.Pre.PostHoc = struct();
@@ -296,8 +295,8 @@ for i=1:numel(I);
      A(1:numel(fcccs_PainPreRoi_HC),1) = fcccs_PainPreRoi_HC;       % HC TO COLUMN 1
      A(1:numel(fcccs_PainPreRoi_CLBP),2) = fcccs_PainPreRoi_CLBP;   % CLBP TO COLUMN 2
      A(1:numel(fcccs_PainPreRoi_FM),3) = fcccs_PainPreRoi_FM;       % FM TO COLUMN 3
-%              STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
-%                   CREATE A TABLE OF OVERALL F-TEST
+%                   STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
+%                        CREATE A TABLE OF OVERALL F-TEST
      [Pain.Pre.PostHoc.(strcat('posthoc', num2str(i))).model_p,Pain.Pre.PostHoc.(strcat('posthoc', num2str(i))).model_tbl, ...
           Pain.Pre.PostHoc.(strcat('posthoc', num2str(i))).model_stats] = anova1(A,gpNames, 'off');  % TABLE OF OVERALL RESULTS
      %              THIS CONVERTS THE ABOVE RESULTS TO TABLE FORMAT
@@ -306,14 +305,14 @@ for i=1:numel(I);
      Pain.Pre.PostHoc.(strcat('posthoc', num2str(i))).Ftable = ...
           array2table(Pain.Pre.PostHoc.(strcat('posthoc', num2str(i))).model_tbl(2:4,:), ...
           'VariableNames', Pain.Pre.PostHoc.(strcat('posthoc', num2str(i))).ftest_tblHdr);
-%              THESE TWO LINES PROVIDE SOMEWHAT REDUNDANT INFORMATION
+%                   THESE TWO LINES PROVIDE SOMEWHAT REDUNDANT INFORMATION
      Pain.Pre.ph_Fvals2(node1, node2) = cell2mat(Pain.Pre.PostHoc.(strcat('posthoc', num2str(i))).model_tbl(2,5)); % THESE ARE F-VALUES
      Pain.Pre.ph_Pvals2(node1, node2) = cell2mat(Pain.Pre.PostHoc.(strcat('posthoc', num2str(i))).model_tbl(2,6)); % THESE ARE P-VALUES
-%              THE NEXT 3 LINES PERFORM THE POST-HOC GROUP COMPARISONS USING: multcompare - ON THE 3RD LINE
+%                   THE NEXT 3 LINES PERFORM THE POST-HOC GROUP COMPARISONS USING: multcompare - ON THE 3RD LINE
      [Pain.Pre.PostHoc.(strcat('posthoc', num2str(i))).c,Pain.Pre.PostHoc.(strcat('posthoc', num2str(i))).m, ...
           Pain.Pre.PostHoc.(strcat('posthoc', num2str(i))).h,Pain.Pre.PostHoc.(strcat('posthoc', num2str(i))).gpNames] ...
           = multcompare(Pain.Pre.PostHoc.(strcat('posthoc', num2str(i))).model_stats, 'CType','bonferroni');    % EVALUATE MULTIPLE COMPARISONS
-%              THE NEXT 3 SEGMENTS CLEAN UP THE OUTPUT AND IMPROVES READIBILITY
+%                   THE NEXT 3 SEGMENTS CLEAN UP THE OUTPUT AND IMPROVES READIBILITY
      Pain.Pre.PostHoc.(strcat('posthoc', num2str(i))).gpPostHoc = ...
           [Pain.Pre.PostHoc.(strcat('posthoc', num2str(i))).gpNames(Pain.Pre.PostHoc.(strcat('posthoc', num2str(i))).c(:,1)), ...
           Pain.Pre.PostHoc.(strcat('posthoc', num2str(i))).gpNames(Pain.Pre.PostHoc.(strcat('posthoc', num2str(i))).c(:,2)), ...
@@ -326,13 +325,12 @@ for i=1:numel(I);
           array2table(Pain.Pre.PostHoc.(strcat('posthoc', num2str(i))).gpPostHoc, ...
           'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
 end
-
-
+%
 %%   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                   THE FIRST ANOVA (PAIN-PRE) FOUND NO SIGNIFICANT DIFFERENCES BETWEEN THE PAIN GROUPS
 %                   THE PAIN GROUPS WERE COLLAPSED FOR THE FOLLOWING ANALYSES (PAIN, PRE-MOOD MANIPULATION)
 %                   T-TEST COMPARING GROUPS ON THE REGION-TO-REGION CROSS-CORRELATIONS
-%                   FINISHED May 2, 2018; CODE BLOCK = LINES 332- ...
+%                   FINISHED May 2, 2018; CODE BLOCK = LINES 335-390
 %    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%              DECLARE STRUCT TO HOLD T-TEST RESULTS
 Pain.Pre.ttest = struct();
@@ -354,20 +352,16 @@ for i = 1:24
           Pain.Pre.ttest.ttest_pval(i,j)=NaN;
      end
 end
-%         THESE IDENTIFY GROUP DIFFERENCES IN ROI-TO-ROI FUNCTIONAL CONNECTIVITY
-%         FDR CORRECTION
+%              THESE IDENTIFY GROUP DIFFERENCES IN ROI-TO-ROI FUNCTIONAL CONNECTIVITY
+%              FDR CORRECTION
 pid = FDR(Pain.Pre.ttest.ttest_pval,.05);
 [I,J] = find(Pain.Pre.ttest.ttest_pval <= pid);
 [I J]
-
-%% Fancy code to print-out RESULTS
-
-% first, create an empty array of character strings
+%%             FANCY CODE TO PRINT-OUT RESULTS
+%              FIRST, CREATE AN EMPTY ARRAY OF CHARACTER STRINGS
 Pain.Pre.ttest.ttest_results = [];
-%OUT_Text_PainPre = [];
-% Now, add strings to that OUT_TEXT
-% and you can use the "sprintf" command for syntax like tabs, line breaks
-
+%              NOW, ADD STRINGS TO THAT ARRAY
+%              AND YOU CAN USE THE "SPRINTF" COMMAND FOR SYNTAX LIKE TABS, LINE BREAKS
 Pain.Pre.ttest.ttest_results = [Pain.Pre.ttest.ttest_results 'Significant t-test of pain ROIs, pre mood change, ' ...
      'in the CCs of these ROI-pairs:' sprintf('\t') sprintf('\n')];
 %              THIS LOOP WRITES OUT THE SIGNIFICANT ROI PAIRS IDENTIFIED BY THE T-TEST ABOVE
@@ -384,63 +378,34 @@ for i=1:numel(I)
       't-val: ', num2str(Pain.Pre.ttest.ttest_FDRtval), sprintf('\t'), ...
       'p-val: ' sprintf('%0.05f',Pain.Pre.ttest.ttest_FDRpval) sprintf('\n')];
 end
-
+%              SEND THE OUTPUT TO THE SCREEN
 Pain.Pre.ttest.ttest_results
-%         NEGATIVE T-VALUES = HEALTHY CONTROL LESS THAN THE COMBINED PAIN GROUPS
+%              NEGATIVE T-VALUES = HEALTHY CONTROL LESS THAN THE COMBINED PAIN GROUPS
 figure;
 imagesc(Pain.Pre.ttest.ttest_tval);colorbar;colormap(parula);
-%
-%         WRITE OUT THE SIGNIFICANT ROI-TO-ROI CORRELATION BETWEEN GROUPS
+%              WRITE OUT THE SIGNIFICANT ROI-TO-ROI CORRELATION BETWEEN GROUPS
 whenRun = datestr(now, 'yyyy-mm-dd_HHMM');
 file_id2 = fopen([rootpath 'Sig_Pain_Pre_ROIttest', whenRun,'.txt'], 'w');
 fprintf(file_id2, Pain.Pre.ttest.ttest_results,'');
 fclose(file_id2);
 %
-%
-%%   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                   NOW THAT WE HAVE IDENTIFIED ROI-ROI CORRELATIONS THAT DIFFER BETWEEN GROUPS VIA T-TEST
 %                   WE WILL USE REGRESSION ANALYSES TO SEE WHICH, IF ANY, BEHAVIORAL VARIABLES SIGNIFICANLY
 %                   CONTRIBUTE TO GROUP DIFFERENCES IN THE FUNCTIONAL CONNECTIVITY BETWEEN THE ROI PAIRS
-%                   FINISHED May 3, 2018; CODE BLOCK = LINES 408- ...
+%                   FINISHED May 3, 2018; CODE BLOCK = LINES 400-446
 %    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%              CREATE A HEADER FOR THE PSQI DATA MATRIX AND 'Y'
-%              'Y' WILL BE THE ROI-TO-ROI CC BEING PREDICTED IN THE ANALYSES BELOW
-%              THE FOLLOWING ARE MULTIPLE LINEAR REGRESSION USING fitlm (WITH A TABLE)
-%
-%psqiPlusRoiNames2 = [psqiNames, 'Ypair'];
 %%              DECLARE STRUCT TO HOLD T-TEST RESULTS
 Pain.Pre.fitLM = struct();
 %              CREATE A HEADER FOR THE PSQI DATA MATRIX AND 'Y'
 %              'Y' WILL BE THE ROI-TO-ROI CC BEING PREDICTED IN THE ANALYSES BELOW
 %              THE FOLLOWING ARE MULTIPLE LINEAR REGRESSION USING fitlm (WITH A TABLE)
-%{
-psqiPlusRoiNames2 = [psqiNames, 'Ypair'];
-for i=1:numel(I);
-     node1 = I(i);
-     node2 = J(i);
-     % roi1num = num2str(I(i));
-     % roi2num = num2str(J(i));
-     % roi1str = painnames3(I(i),:);
-     % roi2str = painnames3(J(i),:);
-     % Ypair = strcat(roi1str,'_',roi2str);
-     % psqiPlusRoiNames = [psqiNames, Ypair];
-     Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
-     psqiPlusROI = [psqiData, Y];
-     tablePsqiPlusROI = array2table(psqiPlusROI, 'VariableNames',psqiPlusRoiNames2);
-     Pain.Pre.fitLM.(strcat('roipair.', num2str(i))) = fitlm(tablePsqiPlusROI, 'Y~TiB_hrs+SoL_min+WASO_min');
-end
-%}
-%
-
-
+%              CREATE A HEADER FOR THE PSQI DATA MATRIX AND 'Y'
+%              'Y' WILL BE THE ROI-TO-ROI CC BEING PREDICTED IN THE ANALYSES BELOW
+%              THE FOLLOWING ARE MULTIPLE LINEAR REGRESSION USING fitlm (WITH A TABLE)
 psqiPlusRoiNames = [psqiNames, 'Y'];
-% psqiPlusROI = [psqiData];
-% tablePsqiPlusROI = array2table(psqiPlusROI, 'VariableNames',psqiPlusRoiNames);
-% tablePsqiPlusROI.GP = nominal(tablePsqiPlusROI.GP)
-
-%
-%
-%             DECALRE A STRUCT TO HOLD ALL THE RESULTS FROM THE fitlm LOOP
+%              DECALRE A STRUCT TO HOLD ALL THE RESULTS FROM THE fitlm LOOP
 Pain.Pre.LM = struct();
 for i=1:numel(I);
      node1 = I(i);
@@ -453,26 +418,23 @@ for i=1:numel(I);
      tblPsqi_ROI = array2table(psqiPlusROI, 'VariableNames',psqiPlusRoiNames);
      tblPsqi_ROI.GP = nominal(tblPsqi_ROI.GP);
      tblPsqi_ROIreduced = tblPsqi_ROI(:,{'TiB_hrs','SoL_min','WASO_min','PSQI_total','GP','Y'});
-     %              LINEAR REGRESSION (fitlm)
+%              LINEAR REGRESSION (fitlm) WITH SPECIFIC INTERACTION TERMS
      Pain.Pre.LM.(strcat('LMpair_', num2str(i))) = fitlm(tblPsqi_ROIreduced, ...
           'Y~TiB_hrs+SoL_min+WASO_min+PSQI_total+TiB_hrs*GP+SoL_min*GP+WASO_min*GP+PSQI_total*GP');
-          % 'Y~TiB_hrs+SoL_min+WASO_min+TiB_hrs*GP+SoL_min*GP+WASO_min*GP');
-
-          %         STEPWISE LINEAR REGRESSION (stepwiselm)
+          %    STEPWISE LINEAR REGRESSION (stepwiselm) WITH SPECIFIC INTERACTION TERMS
      Pain.Pre.LM.(strcat('SLMpair_', num2str(i))) = stepwiselm(tblPsqi_ROIreduced, ...
           'Y~TiB_hrs+SoL_min+WASO_min+PSQI_total+TiB_hrs*GP+SoL_min*GP+WASO_min*GP+PSQI_total*GP');
-%                   INTERCEPT ONLY MODEL (stepwiselm)
+%              INTERCEPT ONLY MODEL (stepwiselm)
      Pain.Pre.LM.(strcat('SLMintercept_', num2str(i))) = stepwiselm(tblPsqi_ROIreduced, ...
           'constant', 'ResponseVar', 'Y');
-%                   INTERACTION MODEL (stepwiselm)
+%              INTERACTION MODEL (stepwiselm)
      Pain.Pre.LM.(strcat('SLMinteraction_', num2str(i))) = stepwiselm(tblPsqi_ROIreduced, ...
           'interactions', 'ResponseVar', 'Y');
-%                   QUADRATIC MODEL (stepwiselm)
+%              QUADRATIC MODEL (stepwiselm)
      Pain.Pre.LM.(strcat('SLMquadratic_', num2str(i))) = stepwiselm(tblPsqi_ROIreduced, ...
           'quadratic','ResponseVar','Y','Upper','quadratic');
 end
-
-%         EVALUATE THE RSQUARED VALUES OF THE REGRESSION MODELS
+%         EVALUATE THE RSQUARED VALUES OF THE REGRESSION MODELS (T-TEST ROI PAIRS)
 for i=1:numel(I)
      Pain.Pre.LM.(strcat('RSq_', num2str(i))) = ...
           [Pain.Pre.LM.(strcat('LMpair_', num2str(i))).Rsquared.Adjusted ...
@@ -481,14 +443,6 @@ for i=1:numel(I)
           Pain.Pre.LM.(strcat('SLMinteraction_', num2str(i))).Rsquared.Adjusted ...
           Pain.Pre.LM.(strcat('SLMquadratic_', num2str(i))).Rsquared.Adjusted];
 end
-
-%    zRSquared = [zmdl1.Rsquared.Adjusted, zmdl2.Rsquared.Adjusted, zmdl3.Rsquared.Adjusted]
-
-
-
-
-
-
 
 %         STEPWISE LINEAR REGRESSION
 % tablePsqiPlusROIstep = tablePsqiPlusROI(:,3:7); % SUBTABLE FOR STEPWISE REGRESSION
@@ -499,12 +453,14 @@ end
 %         gscatter(tablePsqiPlusROI.Y,tablePsqiPlusROI.SleepEfficiency,tablePsqiPlusROI.GP,'bgr','x.o')
 
 
-%{
+%
 % %         OUTPUT THE OVERALL F AND P-VALUES FOR EACH MODEL
 for i=1:numel(I);
-     LM_PainPre.Model = anova(LM_PainPre.(strcat('lm', num2str(i))), 'summary');
-     LM_PainPre.modelSummary(i, :) = LM_PainPre.Model(2,4:5);
+     Pain.Pre.LM.lmModel = anova(Pain.Pre.LM.(strcat('LMpair_', num2str(i))), 'summary');
+     Pain.Pre.LM.lmModelSummary(i, :) = Pain.Pre.LM.lmModel(2,4:5);
 end
+
+%{
 % %         IDENTIFY SIGNIGCANT MODELS
  LM_PainPre.modelSummary.sig = [LM_PainPre.modelSummary.pValue < 0.05];
 LM_PainPre.modelSummary.node1 = I;
@@ -549,17 +505,14 @@ LM_PainPre.modelSummary = LM_PainPre.modelSummary(:, [8 3 2 1 4 5 6 7]);
 % multcomparePreOutput = multcomparePreOutput(:,[1 2 6 4 3 5]);
 % tableAnovaPre = array2table(multcomparePreOutput, 'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
 % multiTest.OUT_TEXT2 = [multiTest.OUT_TEXT2 roi1str 'with ' roi2str 'new line' sprintf('\n')];
-%}
-%{
+%
 
+
+%{
 % pid = FDR(pain_anovaresults_pvals,.05);
 % [x,y] = find(pain_anovaresults_pvals <= pid);
 % [x y];
-
-
-
 %
-
 %}
 
 
@@ -620,306 +573,4 @@ LM_PainPre.modelSummary = LM_PainPre.modelSummary(:, [8 3 2 1 4 5 6 7]);
 % end
 %
 %
-%
-%%%%%%%%%%%%%%%%%%%%%%   OTHER ANALYSES    %%%%%%%%%%%%%%%%%%%%%%
-
-
-
-
-
-
-
-%              RUNNING A STEPWISE REGRESSION USING stepwiselm (WITH A TABLE)
-
-%              RUNNING MULTIPLE LINERAR REGRESSION USING fitlm (WITHOUT A TABLE)
-%
-%              DECALRE A STRUCT TO HOLD ALL THE RESULTS FROM THE fitlm LOOP
-% LM = struct();
-% for i=1:numel(I);
-%      node1 = I(i);
-%      node2 = J(i);
-%      roi1num = num2str(I(i));
-%      roi1str = painnames(I(i),:);
-%      roi2num = num2str(J(i));
-%      roi2str = painnames(J(i),:);
-%      xVars = [psqiData(:, 3:5)];
-%      % nodePairs = [nodePairs, roi1str, roi2str, sprintf('\n')];
-%      Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
-%      %
-%      % LM.(strcat('rois')) = [nodePairs, node1, node2];
-%      % % {roi1str, roi2str};
-%      LM.(strcat('lm', num2str(i))) = fitlm(xVars,Y);
-%
-% end
-%
-% %         OUTPUT THE OVERALL F AND P-VALUES FOR EACH MODEL
-% for i=1:numel(I);
-% ztbl2 = anova(LM.(strcat('lm', num2str(i))), 'summary');
-% modelSummary(i, :) = ztbl2(2,4:5);
-% end
-%
-
-% zlm = fitlm(tablePsqiPlusROI, 'Y~TiB_hrs+SoL_min+WASO_min')
-
-% tablePSQI = array2table(psqiData, 'VariableNames',psqiNames)
-
-
-
-
-
-% X2 = [psqiData(:, 3:5)];
-% lm= fitlm(X2,Y);
-% lm
-
-% Linear regression model:
-%     y ~ 1 + x1 + x2 + x3
-%
-% Estimated Coefficients:
-%                     Estimate          SE         tStat     pValue
-%                    ___________    __________    _______    _______
-%
-%     (Intercept)       -0.09716       0.12003    -0.8095    0.42049
-%     x1              0.00039373    0.00085143    0.46244    0.64495
-%     x2             -0.00031876    0.00029569     -1.078    0.28407
-%     x3                0.013969      0.015571    0.89715    0.37217
-%
-%
-% Number of observations: 89, Error degrees of freedom: 85
-% Root Mean Squared Error: 0.145
-% R-squared: 0.0378,  Adjusted R-Squared 0.00388
-% F-statistic vs. constant model: 1.11, p-value = 0.348
-
-% AJ: Consider running stepwise REGRESSION
-% [BB,SE,PVAL,INCLUDE,NEXTSTEP,HISTORY]=stepwisefit(X,Y);
-% NOTE:  stepwise fit automatically adds a constant column of ones;
-%  (so you don't have to...)
-
-
-% If you want to test relationship only in group 1
-%     i1 = group 1 SUBJECTS
-% X = [ones(size(BEHAVIOR)) BEHAVIOR];
-% Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
-% X = X(i1,:)
-% Y = Y(i1,:)
-
-% for i=1:numel(I)
-%      node1=I(i);
-%      node2=J(i);
-%      for behavior_index=3:5 %14 %2:5%numel(psqiNames) % skip first column, which is ID
-%           BEHAVIOR = psqiData(:,behavior_index);
-%           BEHAVIOR_label=psqiNames{behavior_index};
-%           X = [ones(size(BEHAVIOR)) BEHAVIOR];
-%           Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
-%            X3 = X(i4,:);        % REGRESSION FOR ONLY GROUP 2
-%            Y3 = Y(i4,:);        % REGRESSION FOR ONLY GROUP 2
-%           % X3 = X;
-%           % Y3 = Y;
-%           [B3,BINT3,R3,RINT3,STATS3] = regress(Y3,X3);
-%           % B(1) is beta for constant term; B(2) is beta for behavioral
-%           % STATS lists (1) R2, (2) F stat, (3) p-value, (4) error variance
-%           % can estimate t-value as square-root of F-stat times sign of B(2) (+ or -)
-%
-%           % scatterplot
-%           % if P<0.05 (uncorrected)
-%           %   scatterplot of relationship
-%           if STATS3(3) < 0.05
-%                figure
-%                plot(X3(:,2),Y3,'k+');
-%                hold on
-%                l = lsline;
-%                set(l,'LineWidth',2)
-%                xlabel(psqiNames{behavior_index})
-%                ylabel(['RS-FC of ROI' num2str(node1) '-ROI' num2str(node2)])
-%                R2=STATS3(1);
-%                xposition = max(X3(:,2)) - 0.1*range(X3(:,2));
-%                yposition = max(Y3) - 0.1*range(Y3);
-%                text(xposition,yposition,['R^2 = ' sprintf('%0.3f',R2)])
-%           end
-%
-%           Regress_P_out3(i,behavior_index) = STATS3(3);
-%           Regress_T_out3(i,behavior_index) = sqrt(STATS3(2))*sign(B3(2));
-%           Regress_B_out3(i,behavior_index) = B3(2);
-%           % Note: in line 287, we are looping through variables 3-5
-%           % in line 317, we are assigning to columns 3-5
-%           % therefore, columns 1 and 2 will be empty (all zeros)
-%           %
-%           % You can change code so that line 316 assigns to (behavior_index-2), but this could cause problems later
-%           % Recommend keep as is
-%           %
-%           % So each row of Regress_B_out is a different ROI-to-ROI pairs
-%           % and each column corresponds to a variable in psqiData (if tested)
-%           % For example: we did not test variable #1 (subject ID), so this column is all zeros
-%
-%      end
-% end
-
-
-% Method B:  multiple linear regression
-% As simple, but reading in all behaviors
-
-% psqiNames = {'ID','TiB_hrs', 'SoL_min','WASO_min','TST_hrs','SleepEfficiency','psqi_Durat','psqi_Distb', ...
-%               'psqi_Latency','psqi_DayDys','psqi_SE','psqi_BadSQual','psqi_Meds','PSQI_total'}
-% for i=1:numel(I)
-%      node1=I(i);
-%      node2=J(i);
-%      Y = mean(squeeze(painzgfcccs(node1, node2, :, 1, :)), 2);
-%      % X = [psqiData(:,2:end)]; % note: only doing 2-5 due to multicollinarity - address later
-%      X = [psqiData(:,2:5)];
-%      lm= fitlm(X,Y);
-%      % B(1) is beta for constant term; B(2) is beta for behavioral
-%      % STATS lists (1) R2, (2) F stat, (3) p-value, (4) error variance
-%      % can estimate t-value as square-root of F-stat times sign of B(2) (+ or -)
-%
-%      % scatterplot
-%      % if P<0.05 (uncorrected)
-%      %   scatterplot of relationship
-% end
-
-
-
-%%
-%         THERE IS A SIGNIGCANT MAIN EFFECT FOR GROUP
-%         BOTH PAIN GROUPS DIFFER FROM THE HC GROUP
-%         NEITHER PAIN GROUP DIFFERES FROM EACH OTHER
-%         GOING FORWARD, COLLAPSING ACROSS PAIN GROUPS
-%%
-
-
-
-
-
-
-
-
-
-
-
-%
-%
-% %%             SYNTAX FOR PERFORMING A MANOVA
-% %              START BY CREATING A VECTOR REPRESENTING ALL THE GROUPS
-% gp1 = ones(length(i1),1);
-% gp2 = 2*ones(length(i2),1);
-% gp3 = 3*ones(length(i3),1);
-% gps123 = cat(1,gp1,gp2,gp3);
-% groups = nominal(gps123);               % SPECIFY THIS AS AN ORDINAL VARIABLE
-% groups = setlabels(groups,{'HC','CLBP','FM'});    % SET THE VARIABLE LABELS
-% prePain123 = cat(1,prePainHC, prePainCLBP,prePainFM);  % CREATE ANOTHER VECTOR TO INCLUDE
-% %              RUN THE MANOVA
-% [d,p,stats] = manova1(prePain123,groups)
-%
-
-% as a one-sample t-test
-%
-%
-%
-%
-%
-%
-%
-%                   END SCRIPT
-% for node1 = 1:16
-%     for node2 = 1:16
-
-%         THIS CREATES A MEAN CORRELATION MATRIX FOR THE PAIN ROIS OF EACH GROUP
-% for node1 = 1:length(pain)
-%      for node2 = 1:length(pain)
-%         prePainHC = mean(squeeze(painzgfcccs(node1, node2, i1, 1, :)), 2);
-%         prePainCLBP = mean(squeeze(painzgfcccs(node1, node2, i2, 1, :)), 2);
-%         prePainFM = mean(squeeze(painzgfcccs(node1, node2, i3, 1, :)), 2);
-% %
-% %         % place the code between lines 116 and 131 here
-%         gpNames = {'HC','CLBP','FM'};               % VARIABLE OF GROUP NAMES
-% %       STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
-% %       THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
-% %       IDENTIFY THE LARGEST GROUP
-%         A = max([length(i1),length(i2),length(i3)]);
-%         A = zeros(A,3);    % INITIALIZE ARRAY OF ALL ZEROS  FOR LARGEST GROUP
-%         A(A == 0) = NaN;    % CONVERT ALL '0' TO 'NaN' (MISSING VALUES)
-%         A(1:length(prePainHC),1) = prePainHC;       % HC TO COLUMN 1
-%         A(1:length(prePainCLBP),2) = prePainCLBP;   % CLBP TO COLUMN 2
-%         A(1:length(prePainFM),3) = prePainFM;       % FM TO COLUMN 3
-% %       STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
-% %       CREATE A TABLE OF OVERALL F-TEST
-%         [p,tbl,stats] = anova1(A,gpNames, 'off');      % TABLE OF OVERALL RESULTS
-% %         ftestNames = tbl(1,:);                  % VARIABLE NAMES FOR THE TABLE
-% %         ftestNames{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
-% %         tableFtest = array2table(tbl(2:4,:),'VariableNames',ftestNames);
-%         pain_anovaresults_effect(node1, node2) = cell2mat(tbl(2,5)); % THESE ARE F-VALUES
-%         pain_anovaresults_pvalue(node1, node2) = p;
-%     end
-% end
-
-
-%painzgfcccs = zgfcccs(1:16, 1:16, :, :, :);
-%dmnzgfcccs = zgfcccs(17:22, 17:22, :, :, :);
-
-
-%%
-%    THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE 16 PAIN REGIONS
-%    painnet = squeeze(sum(sum(painzgfcccs, 1), 2)) ./ (16 * 15);
-%    THESE ARE THE CCs FOR ALL 90 SUBJECTS ACROSS THE 6 DMN REGIONS
-%    dmnnet = squeeze(sum(sum(dmnzgfcccs, 1), 2)) ./ (6 * 5);
-
-
-%get left amygdala (region 2) to left anterior insula (region 8) from pain network
-%pain_lamyg_2_linsula = squeeze(painzgfcccs(2, 8, :, :, :));
-
-
-%pain_anovaresults_effect = zeros(16, 16);
-%pain_anovaresults_pvalue = zeros(16, 16);
 %}
-
-
-% from the anova lookin at all pairs
-% Anova_Overall_PainPre.pain_anovaresults_effect = zeros(length(painvoi),length(painvoi));
-% Anova_Overall_PainPre.pain_anovaresults_pvalue = zeros(length(painvoi),length(painvoi));
-
-% computing the ANOVA for all pairs
-
-%Pain.Pre.roi2roi.anova_output1 = [];
-%Pain.Pre.roi2roi.anova_output1 = [Pain.Pre.roi2roi.anova_output1 'These ROIs CCs differ between groups:' sprintf('\t') sprintf('\n')];
-
-
-% Pain.Pre.roi2roi.anova_output1
-%this_tval1 = '20'; % pain_ttest_tval(I(i),J(i));
-
-% prePainHC = mean(squeeze(painzgfcccs(node1, node2, i1, 1, :)), 2);
-% prePainCLBP = mean(squeeze(painzgfcccs(node1, node2, i2, 1, :)), 2);
-% prePainFM = mean(squeeze(painzgfcccs(node1, node2, i3, 1, :)), 2);
-% prePainGps = mean(squeeze(painzgfcccs(node1, node2, i4, 1, :)), 2);     % BOTH CP GROUPS
-% gpNames = {'HC','CLBP','FM'};           % VARIABLE: GROUP NAMES
-% gpNames2 = {'HC','Pain'};               % VARIABLE: GROUP NAMES COLLAPSED ACROSS CP GROUPS
-%       STEP 2 = CREATE AN ARRAY OF THE COMBINED VARIABLES FROM ABOVE
-%       THE ARRAY NEEDS TO BE PADDED BECAUSE OF UNEVEN GROUP SIZES
-%       IDENTIFY THE LARGEST GROUP
-% A = max([length(i1),length(i2),length(i3)]);
-% A = zeros(A,3);    % INITIALIZE ARRAY OF ALL ZEROS  FOR LARGEST GROUP
-% A(A == 0) = NaN;    % CONVERT ALL '0' TO 'NaN' (MISSING VALUES)
-% A(1:length(prePainHC),1) = prePainHC;       % HC TO COLUMN 1
-% A(1:length(prePainCLBP),2) = prePainCLBP;   % CLBP TO COLUMN 2
-% A(1:length(prePainFM),3) = prePainFM;       % FM TO COLUMN 3
-%       STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
-%       CREATE A TABLE OF OVERALL F-TEST
-%[p,tbl,stats] = anova1(A,gpNames, 'off');      % TABLE OF OVERALL RESULTS
-% [H_PainPre,P_PainPre,CI_PainPre,STATS_PainPre] = ttest2(prePainHC,prePainGps);           % 2 SAMPLE T-TEST
-%         ftestNames = tbl(1,:);                  % VARIABLE NAMES FOR THE TABLE
-%         ftestNames{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
-%         tableFtest = array2table(tbl(2:4,:),'VariableNames',ftestNames);
-% pain_anovaresults_effect(node1, node2) = cell2mat(tbl(2,5)); % THESE ARE F-VALUES
-% pain_anovaresults_pvalue(node1, node2) = p;
-% ttest_tval_PainPre(node1, node2) = STATS_PainPre.tstat; % tstat
-% ttest_pval_PainPre(node1, node2) = P_PainPre; % pvalue
-
-% OUT_Text_PainPre = [OUT_Text_PainPre roi1str ' (#' roi1num ') with ' roi2str ' (#' roi2num ')' sprintf('\t') ...
-%  't-score: ' num2str(PainROI_tval) sprintf('\t') ' p-value: ' sprintf('%0.05f',PainROI_pval) ...
-%  sprintf('\n') ];
-% OUT_Text_PainPre = [OUT_Text_PainPre roi1str '(#',roi1num,') with ',roi2str '(#', roi2num ')' ...
-% 't-score: ' num2str(PainROI_tval) ' p-value: ' sprintf('%0.05f',PainROI_pval) ...
-% sprintf('\n') ];
-
-%dlmwrite('PainRoiTtest_PainPre.txt',OUT_Text_PainPre,'')
-
-% file_id1 = fopen([rootpath 'GpFCdiffs_',datestr(now, 'yyyy-mm-dd_HH:MM'),'.txt'], 'w');
-
-%imagesc(ttest_tval_PainPre);colorbar;colormap('jet');
