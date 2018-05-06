@@ -459,12 +459,19 @@ for i=1:numel(I);
      Pain.Pre.LM.lmModel = anova(Pain.Pre.LM.(strcat('LMpair_', num2str(i))), 'summary');
      Pain.Pre.LM.lmModelSummary(i, :) = Pain.Pre.LM.lmModel(2,4:5);
 end
+%
+%
+%         IDENTIFY SIGNIGCANT MODELS BASED ON THE PVALUES STORED IN lmModelSummary
+%         THE PVALUE CRITERIA IS SPECIFIED BELOW
+%         SIG = '1'; NON-SIG = '0'
+%         THE MODEL NUMBER IS ADDED
+%         THE NUMBERS AND NAMES OF EACH ROI PAIR ARE ADDED
+%         THE NEW COLUMN ORDER IS 'model','sig','pvalue','F','node1','node2','roi1','roi2'
+Pain.Pre.LM.lmModelSummary.sig = [Pain.Pre.LM.lmModelSummary.pValue < 0.05];
+Pain.Pre.LM.lmModelSummary.node1 = I;
+Pain.Pre.LM.lmModelSummary.node2 = J;
 
-%{
-% %         IDENTIFY SIGNIGCANT MODELS
- LM_PainPre.modelSummary.sig = [LM_PainPre.modelSummary.pValue < 0.05];
-LM_PainPre.modelSummary.node1 = I;
-LM_PainPre.modelSummary.node2 = J;
+%
 for i=1:numel(I);
   node1 = I(i);
   node2 = J(i);
@@ -476,14 +483,19 @@ for i=1:numel(I);
   DUMMY_ROI2{i} = roi2str;
 end
 
+Pain.Pre.LM.lmModelSummary.roi1 = DUMMY_ROI1';
+Pain.Pre.LM.lmModelSummary.roi2 = DUMMY_ROI2';
+Pain.Pre.LM.lmModelSummary.model = (1:numel(I))';
+Pain.Pre.LM.lmModelSummary = Pain.Pre.LM.lmModelSummary(:, [8 3 2 1 4 5 6 7]);
 
+%{
 LM_PainPre.modelSummary.roi1 = DUMMY_ROI1';
 LM_PainPre.modelSummary.roi2 = DUMMY_ROI2';
 LM_PainPre.modelSummary.model = (1:numel(I))';
 LM_PainPre.modelSummary = LM_PainPre.modelSummary(:, [8 3 2 1 4 5 6 7]);
 %
 %
-%
+%{
 %
 %
 %
@@ -573,4 +585,5 @@ LM_PainPre.modelSummary = LM_PainPre.modelSummary(:, [8 3 2 1 4 5 6 7]);
 % end
 %
 %
+%}
 %}
