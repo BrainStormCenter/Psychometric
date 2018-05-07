@@ -1,4 +1,7 @@
 # To do list for the Psychometric grant
+May 6, 2018
+* There is an issue with the means of the post hoc models. The mean for each group should remain constant, but that does not seem to be the case. Find out why.
+
 
 April 24, 2018
 * what is the cross correlation of the pain and DMN regions

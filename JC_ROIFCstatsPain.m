@@ -7,7 +7,7 @@
 %
 %		USAGE:			TESTING ROI CORRELATIONS ACROSS GROUPS
 %
-%         LATEST MODIFICATION:     2018_05_05
+%         LATEST MODIFICATION:     2018_05_06
 %
 %         AS OF May 4, 2018, THERE ARE ISSUES WITH THE PSQI DATA
 %              SUB 161 = WASO SCORE OF -30
@@ -373,10 +373,10 @@ for i=1:numel(I)
      roi2str = painnames3(J(i),:);
      Pain.Pre.ttest.ttest_FDRtval = Pain.Pre.ttest.ttest_tval(I(i),J(i));
      Pain.Pre.ttest.ttest_FDRpval = Pain.Pre.ttest.ttest_pval(I(i),J(i));
-     Pain.Pre.ttest.ttest_results = [Pain.Pre.ttest.ttest_results pairNum, '. ' roi1str, ...
-      '(#',roi1num,') with ',roi2str, '(#', roi2num,')', sprintf('\t'), ...
+     Pain.Pre.ttest.ttest_results = [Pain.Pre.ttest.ttest_results pairNum, '. ' roi1str, 'with ' roi2str ...
+      sprintf('\t') '(#' roi1num ') <-->' ' (#' roi2num ')  ' sprintf('\t') ...
       't-val: ', num2str(Pain.Pre.ttest.ttest_FDRtval), sprintf('\t'), ...
-      'p-val: ' sprintf('%0.05f',Pain.Pre.ttest.ttest_FDRpval) sprintf('\n')];
+      'p-val: ' sprintf('%0.04f',Pain.Pre.ttest.ttest_FDRpval) sprintf('\n')];
 end
 %              SEND THE OUTPUT TO THE SCREEN
 Pain.Pre.ttest.ttest_results
@@ -405,8 +405,8 @@ Pain.Pre.fitLM = struct();
 %              'Y' WILL BE THE ROI-TO-ROI CC BEING PREDICTED IN THE ANALYSES BELOW
 %              THE FOLLOWING ARE MULTIPLE LINEAR REGRESSION USING fitlm (WITH A TABLE)
 psqiPlusRoiNames = [psqiNames, 'Y'];
-%              DECALRE A STRUCT TO HOLD ALL THE RESULTS FROM THE fitlm LOOP
-Pain.Pre.LM = struct();
+%              DECALRE A STRUCT TO HOLD ALL THE RESULTS FROM THE REGRESSIONS BELOW
+Pain.Pre.LMttest = struct();
 for i=1:numel(I);
      node1 = I(i);
      node2 = J(i);
@@ -419,58 +419,44 @@ for i=1:numel(I);
      tblPsqi_ROI.GP = nominal(tblPsqi_ROI.GP);
      tblPsqi_ROIreduced = tblPsqi_ROI(:,{'TiB_hrs','SoL_min','WASO_min','PSQI_total','GP','Y'});
 %              LINEAR REGRESSION (fitlm) WITH SPECIFIC INTERACTION TERMS
-     Pain.Pre.LM.(strcat('LMpair_', num2str(i))) = fitlm(tblPsqi_ROIreduced, ...
+     Pain.Pre.LMttest.(strcat('LMpair_', num2str(i))) = fitlm(tblPsqi_ROIreduced, ...
           'Y~TiB_hrs+SoL_min+WASO_min+PSQI_total+TiB_hrs*GP+SoL_min*GP+WASO_min*GP+PSQI_total*GP');
           %    STEPWISE LINEAR REGRESSION (stepwiselm) WITH SPECIFIC INTERACTION TERMS
-     Pain.Pre.LM.(strcat('SLMpair_', num2str(i))) = stepwiselm(tblPsqi_ROIreduced, ...
+     Pain.Pre.LMttest.(strcat('SLMpair_', num2str(i))) = stepwiselm(tblPsqi_ROIreduced, ...
           'Y~TiB_hrs+SoL_min+WASO_min+PSQI_total+TiB_hrs*GP+SoL_min*GP+WASO_min*GP+PSQI_total*GP');
 %              INTERCEPT ONLY MODEL (stepwiselm)
-     Pain.Pre.LM.(strcat('SLMintercept_', num2str(i))) = stepwiselm(tblPsqi_ROIreduced, ...
+     Pain.Pre.LMttest.(strcat('SLMintercept_', num2str(i))) = stepwiselm(tblPsqi_ROIreduced, ...
           'constant', 'ResponseVar', 'Y');
 %              INTERACTION MODEL (stepwiselm)
-     Pain.Pre.LM.(strcat('SLMinteraction_', num2str(i))) = stepwiselm(tblPsqi_ROIreduced, ...
+     Pain.Pre.LMttest.(strcat('SLMinteraction_', num2str(i))) = stepwiselm(tblPsqi_ROIreduced, ...
           'interactions', 'ResponseVar', 'Y');
 %              QUADRATIC MODEL (stepwiselm)
-     Pain.Pre.LM.(strcat('SLMquadratic_', num2str(i))) = stepwiselm(tblPsqi_ROIreduced, ...
+     Pain.Pre.LMttest.(strcat('SLMquadratic_', num2str(i))) = stepwiselm(tblPsqi_ROIreduced, ...
           'quadratic','ResponseVar','Y','Upper','quadratic');
 end
 %         EVALUATE THE RSQUARED VALUES OF THE REGRESSION MODELS (T-TEST ROI PAIRS)
 for i=1:numel(I)
-     Pain.Pre.LM.(strcat('RSq_', num2str(i))) = ...
-          [Pain.Pre.LM.(strcat('LMpair_', num2str(i))).Rsquared.Adjusted ...
-          Pain.Pre.LM.(strcat('SLMpair_', num2str(i))).Rsquared.Adjusted ...
-          Pain.Pre.LM.(strcat('SLMintercept_', num2str(i))).Rsquared.Adjusted ...
-          Pain.Pre.LM.(strcat('SLMinteraction_', num2str(i))).Rsquared.Adjusted ...
-          Pain.Pre.LM.(strcat('SLMquadratic_', num2str(i))).Rsquared.Adjusted];
+     Pain.Pre.LMttest.(strcat('RSq_', num2str(i))) = ...
+          [Pain.Pre.LMttest.(strcat('LMpair_', num2str(i))).Rsquared.Adjusted ...
+          Pain.Pre.LMttest.(strcat('SLMpair_', num2str(i))).Rsquared.Adjusted ...
+          Pain.Pre.LMttest.(strcat('SLMintercept_', num2str(i))).Rsquared.Adjusted ...
+          Pain.Pre.LMttest.(strcat('SLMinteraction_', num2str(i))).Rsquared.Adjusted ...
+          Pain.Pre.LMttest.(strcat('SLMquadratic_', num2str(i))).Rsquared.Adjusted];
 end
-
-%         STEPWISE LINEAR REGRESSION
-% tablePsqiPlusROIstep = tablePsqiPlusROI(:,3:7); % SUBTABLE FOR STEPWISE REGRESSION
-% Pain.Pre.LM.(strcat('pair_'+1, num2str(i))) = stepwisefit(tablePsqiPlusROIstep,Y,'penter',0.05,'premove',0.10);
-%    TO INCLUDE COVARIATES, OR INTERACTION TERMS, CONSIDER MODIFYING THE CODE BELOW
-%         zmdl2 = fitlm(tablePsqiPlusROI, 'Y~TiB_hrs+TiB_hrs*GP')
-%    FOR DOING SCATTERPLOTS OF THE DATA CONSIDER USING THE CODE BELOW
-%         gscatter(tablePsqiPlusROI.Y,tablePsqiPlusROI.SleepEfficiency,tablePsqiPlusROI.GP,'bgr','x.o')
-
-
-%
-% %         OUTPUT THE OVERALL F AND P-VALUES FOR EACH MODEL
+%         OUTPUT THE OVERALL F AND P-VALUES FOR EACH MODEL
 for i=1:numel(I);
-     Pain.Pre.LM.lmModel = anova(Pain.Pre.LM.(strcat('LMpair_', num2str(i))), 'summary');
-     Pain.Pre.LM.lmModelSummary(i, :) = Pain.Pre.LM.lmModel(2,4:5);
+     Pain.Pre.LMttest.lmModel = anova(Pain.Pre.LMttest.(strcat('LMpair_', num2str(i))), 'summary');
+     Pain.Pre.LMttest.lmModelSummary(i, :) = Pain.Pre.LMttest.lmModel(2,4:5);
 end
-%
-%
 %         IDENTIFY SIGNIGCANT MODELS BASED ON THE PVALUES STORED IN lmModelSummary
 %         THE PVALUE CRITERIA IS SPECIFIED BELOW
 %         SIG = '1'; NON-SIG = '0'
 %         THE MODEL NUMBER IS ADDED
 %         THE NUMBERS AND NAMES OF EACH ROI PAIR ARE ADDED
 %         THE NEW COLUMN ORDER IS 'model','sig','pvalue','F','node1','node2','roi1','roi2'
-Pain.Pre.LM.lmModelSummary.sig = [Pain.Pre.LM.lmModelSummary.pValue < 0.05];
-Pain.Pre.LM.lmModelSummary.node1 = I;
-Pain.Pre.LM.lmModelSummary.node2 = J;
-
+Pain.Pre.LMttest.lmModelSummary.sig = [Pain.Pre.LMttest.lmModelSummary.pValue < 0.05];
+Pain.Pre.LMttest.lmModelSummary.node1 = I;
+Pain.Pre.LMttest.lmModelSummary.node2 = J;
 %
 for i=1:numel(I);
   node1 = I(i);
@@ -482,11 +468,11 @@ for i=1:numel(I);
   DUMMY_ROI1{i} = roi1str;
   DUMMY_ROI2{i} = roi2str;
 end
-
-Pain.Pre.LM.lmModelSummary.roi1 = DUMMY_ROI1';
-Pain.Pre.LM.lmModelSummary.roi2 = DUMMY_ROI2';
-Pain.Pre.LM.lmModelSummary.model = (1:numel(I))';
-Pain.Pre.LM.lmModelSummary = Pain.Pre.LM.lmModelSummary(:, [8 3 2 1 4 5 6 7]);
+%
+Pain.Pre.LMttest.lmModelSummary.roi1 = DUMMY_ROI1';
+Pain.Pre.LMttest.lmModelSummary.roi2 = DUMMY_ROI2';
+Pain.Pre.LMttest.lmModelSummary.model = (1:numel(I))';
+Pain.Pre.LMttest.lmModelSummary = Pain.Pre.LMttest.lmModelSummary(:, [8 3 2 1 4 5 6 7]);
 
 %{
 LM_PainPre.modelSummary.roi1 = DUMMY_ROI1';
@@ -497,6 +483,15 @@ LM_PainPre.modelSummary = LM_PainPre.modelSummary(:, [8 3 2 1 4 5 6 7]);
 %
 %{
 %
+%         STEPWISE LINEAR REGRESSION
+% tablePsqiPlusROIstep = tablePsqiPlusROI(:,3:7); % SUBTABLE FOR STEPWISE REGRESSION
+% Pain.Pre.LM.(strcat('pair_'+1, num2str(i))) = stepwisefit(tablePsqiPlusROIstep,Y,'penter',0.05,'premove',0.10);
+%    TO INCLUDE COVARIATES, OR INTERACTION TERMS, CONSIDER MODIFYING THE CODE BELOW
+%         zmdl2 = fitlm(tablePsqiPlusROI, 'Y~TiB_hrs+TiB_hrs*GP')
+%    FOR DOING SCATTERPLOTS OF THE DATA CONSIDER USING THE CODE BELOW
+%         gscatter(tablePsqiPlusROI.Y,tablePsqiPlusROI.SleepEfficiency,tablePsqiPlusROI.GP,'bgr','x.o')
+
+
 %
 %
 %}
