@@ -385,7 +385,7 @@ end
 Pain.Post.n4_Gp_ttestRoiPairPain.ttest_results
 %              NEGATIVE T-VALUES = HEALTHY CONTROL LESS THAN THE COMBINED PAIN GROUPS
 figure;
-imagesc(Pain.Post.n4_Gp_ttestRoiPairPain.ttest_tval);colorbar;colormap(parula);
+imagesc(Pain.Post.n4_Gp_ttestRoiPairPain.ttest_tval);colorbar;colormap(jet);
 
 %              WRITE OUT THE SIGNIFICANT ROI-TO-ROI CORRELATION BETWEEN GROUPS
 whenRun = datestr(now, 'yyyy-mm-dd_HHMM');
