@@ -7,7 +7,7 @@
 %
 %		USAGE:			TESTING FUNCTIONAL CONNECTIVITY AMONG PAIN-RELATED ROIS POST MOOD MANIPULATION
 %
-%         LATEST MODIFICATION:     2018_05_08
+%         LATEST MODIFICATION:     2018_05_11
 %
 %         AS OF May 4, 2018, THERE ARE ISSUES WITH THE PSQI DATA
 %              SUB 161 = WASO SCORE OF -30
@@ -475,6 +475,12 @@ Pain.Post.n4_Gp_regrssRoiPairPain.lmModelSummary.roi1 = DUMMY_ROI1';
 Pain.Post.n4_Gp_regrssRoiPairPain.lmModelSummary.roi2 = DUMMY_ROI2';
 Pain.Post.n4_Gp_regrssRoiPairPain.lmModelSummary.model = (1:numel(I))';
 Pain.Post.n4_Gp_regrssRoiPairPain.lmModelSummary = Pain.Post.n4_Gp_regrssRoiPairPain.lmModelSummary(:, [8 3 2 1 4 5 6 7]);
+
+
+
+%              TO FIND COMMON ELEMENTS IN THE ROI PAIRS FROM  ANALYSES 2 AND 4
+Pain.Post.n5_Gp_n2n4_RoiPairPain = ...
+     intersect(Pain.Post.n2_Gp_sigRoiPairPain, Pain.Post.n4_Gp_sigRoiPairPain, 'rows', 'stable');
 
 %{
 LM_PainPost.modelSummary.roi1 = DUMMY_ROI1';

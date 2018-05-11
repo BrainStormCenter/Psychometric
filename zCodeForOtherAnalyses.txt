@@ -3,6 +3,29 @@
 
 
 
+%     FIND COMMON ELEMENTS IN MATRICES AND PUT THEM INTO ANOTHER MATRIX
+
+z1 = [15,2;16,2;10,5;9,6;10,6;17,9;18,9;11,10;17,10;18,10;18,11;18,15;24,19;23,20;24,20];
+z2 = [16,2;10,5;9,6;10,6;17,9;18,9;17,10;18,10;16,11;18,15;23,19;24,19;23,20;24,20;23,22;24,22];
+z3 = find(ismember(z1,z2,'rows'))
+z4 = [];
+for i=1:numel(z3)
+  z4(i,:) = z1(z3(i),:)
+end
+
+for i=1:numel(z3)
+z4 = [z4;[z1(z3(i)),z1(z3(i),2)]];
+end
+
+
+for i=1:numel(z3)
+  z4(i,:) = z1(z3(i),:)
+end
+
+
+
+
+
 
 
 
