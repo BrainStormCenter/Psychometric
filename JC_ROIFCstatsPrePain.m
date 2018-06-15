@@ -21,6 +21,7 @@ n = neuroelf;
 %         SET PRIMARY PATH
 rootpath = '/Volumes/Data/Imaging/R01/preprocessed/';
 cd(rootpath);
+whenRun = datestr(now, 'yyyy-mm-dd_HHMM');
 
 % load variable
 % contains slistd! WHICH CONATAINS THE SUBJECT LIST
@@ -143,7 +144,7 @@ PSQIandPainCCs = [psqiData,sub_by_painCCs];  % WHY DID I MAKE THIS?
 %                   FINISHED May 1, 2018; CODE BLOCK = LINES 145-188
 %    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %              DECLARE ARRAY TO STORE ANOVA RESULTS
-Pain.Pre.n1_Gp_AvgPain = struct();
+Pain.Pre.n1_3Gp_AvgPain = struct();
 %              STEP 1 = CREATE VARIABLES OF THE MEAN CORRELATION OF ALL PAIN REGIONS
 %                   FOR EACH GROUP OF THE PRE SCANS ACROSS BOTH VISITS
 fcccs_PainPreAvg_HC = mean(painnet(i1,1,:),3);        % MEAN OF HC
@@ -160,37 +161,66 @@ A(1:numel(fcccs_PainPreAvg_CLBP),2) = fcccs_PainPreAvg_CLBP;   % CLBP TO COLUMN 
 A(1:numel(fcccs_PainPreAvg_FM),3) = fcccs_PainPreAvg_FM;       % FM TO COLUMN 3
 %              STEP 3 = RUNNING THE ANOVA AND MULTIPLE COMPARISONS
 %                   CREATE A TABLE OF OVERALL F-TEST
-[Pain.Pre.n1_Gp_AvgPain.p_PainPre,Pain.Pre.n1_Gp_AvgPain.modelSummary_PainPre,Pain.Pre.n1_Gp_AvgPain.stats_PainPre] ...
+[Pain.Pre.n1_3Gp_AvgPain.p_PainPre,Pain.Pre.n1_3Gp_AvgPain.modelSummary_PainPre,Pain.Pre.n1_3Gp_AvgPain.stats_PainPre] ...
      = anova1(A,gpNames);
 %              THIS CONVERTS THE ABOVE RESULTS TO TABLE FORMAT
-Pain.Pre.n1_Gp_AvgPain.ftest_tblHdr = Pain.Pre.n1_Gp_AvgPain.modelSummary_PainPre(1,:);    % VARIABLE NAMES FOR THE TABLE
-Pain.Pre.n1_Gp_AvgPain.ftest_tblHdr{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
-Pain.Pre.n1_Gp_AvgPain.overallFtest = array2table(Pain.Pre.n1_Gp_AvgPain.modelSummary_PainPre(2:4,:), ...
-     'VariableNames',Pain.Pre.n1_Gp_AvgPain.ftest_tblHdr);
+Pain.Pre.n1_3Gp_AvgPain.ftest_tblHdr = Pain.Pre.n1_3Gp_AvgPain.modelSummary_PainPre(1,:);    % VARIABLE NAMES FOR THE TABLE
+Pain.Pre.n1_3Gp_AvgPain.ftest_tblHdr{1,6} = 'Prob_F';             % FIX THE SYMBOL ISSUE
+Pain.Pre.n1_3Gp_AvgPain.overallFtest = array2table(Pain.Pre.n1_3Gp_AvgPain.modelSummary_PainPre(2:4,:), ...
+     'VariableNames',Pain.Pre.n1_3Gp_AvgPain.ftest_tblHdr);
 figure;
 %              POST-HOC GROUP COMPARISONS
-[Pain.Pre.n1_Gp_AvgPain.multcompare.c,~,~,Pain.Pre.n1_Gp_AvgPain.multcompare.gnames] = ...
-     multcompare(Pain.Pre.n1_Gp_AvgPain.stats_PainPre);    % EVALUATE MULTIPLE COMPARISONS
+[Pain.Pre.n1_3Gp_AvgPain.multcompare.c,~,~,Pain.Pre.n1_3Gp_AvgPain.multcompare.gnames] = ...
+     multcompare(Pain.Pre.n1_3Gp_AvgPain.stats_PainPre);    % EVALUATE MULTIPLE COMPARISONS
 %              STEP 4 = PREPARING POST-HOC STATS OUTPUT
 %                   CREATE AN ARRAY OF ANOVA STATISTICAL OUTPUT
-Pain.Pre.n1_Gp_AvgPain.multcompare.multout_PainPre = ...
-     [Pain.Pre.n1_Gp_AvgPain.multcompare.gnames(Pain.Pre.n1_Gp_AvgPain.multcompare.c(:,1)), ...
-     Pain.Pre.n1_Gp_AvgPain.multcompare.gnames(Pain.Pre.n1_Gp_AvgPain.multcompare.c(:,2)), ...
-     num2cell(Pain.Pre.n1_Gp_AvgPain.multcompare.c(:,3:6))];
+Pain.Pre.n1_3Gp_AvgPain.multcompare.multout_PainPre = ...
+     [Pain.Pre.n1_3Gp_AvgPain.multcompare.gnames(Pain.Pre.n1_3Gp_AvgPain.multcompare.c(:,1)), ...
+     Pain.Pre.n1_3Gp_AvgPain.multcompare.gnames(Pain.Pre.n1_3Gp_AvgPain.multcompare.c(:,2)), ...
+     num2cell(Pain.Pre.n1_3Gp_AvgPain.multcompare.c(:,3:6))];
 %              INITIAL ORDER OF OUTPUT FROM THE MULTICOMPARISON STEP
 %                   COLUMNS 1-6 =  {'gp1','gp2','lCI','gpDiff','uCI','pval'}
 %              CHANGING THE VARIABLE ORDER IN THE OUTPUT ARRAY TO
 %                   COLUMNS 1-6 = {'gp1','gp2', 'pval','gpDiff','lCI','uCI'}) AND THEN
 %              CREATE A TABLE OF THE MULTICOMPARISON OUTPUT
-Pain.Pre.n1_Gp_AvgPain.multcompare.multout_PainPre = Pain.Pre.n1_Gp_AvgPain.multcompare.multout_PainPre(:,[1 2 6 4 3 5]);
-Pain.Pre.n1_Gp_AvgPain.multcompare.multoutTbl_PainPre = ...
-     array2table(Pain.Pre.n1_Gp_AvgPain.multcompare.multout_PainPre, ...
+Pain.Pre.n1_3Gp_AvgPain.multcompare.multout_PainPre = Pain.Pre.n1_3Gp_AvgPain.multcompare.multout_PainPre(:,[1 2 6 4 3 5]);
+Pain.Pre.n1_3Gp_AvgPain.multcompare.multoutTbl_PainPre = ...
+     array2table(Pain.Pre.n1_3Gp_AvgPain.multcompare.multout_PainPre, ...
      'VariableNames',{'gp1','gp2', 'pval','gpDiff','lCI','uCI'});
+
+%                   COMBINING ALL THE RESULTS INTO A SINGLE ARRAY
+Pain.Pre.n1_3Gp_AvgPain.overallResults = ...
+     [Pain.Pre.n1_3Gp_AvgPain.modelSummary_PainPre];
+Pain.Pre.n1_3Gp_AvgPain.overallResults(5,:) = {'-','-','-','-','-','-'};
+Pain.Pre.n1_3Gp_AvgPain.overallResults = [Pain.Pre.n1_3Gp_AvgPain.overallResults;...
+     Pain.Pre.n1_3Gp_AvgPain.multcompare.multoutTbl_PainPre.Properties.VariableNames];
+Pain.Pre.n1_3Gp_AvgPain.overallResults = [Pain.Pre.n1_3Gp_AvgPain.overallResults;...
+     Pain.Pre.n1_3Gp_AvgPain.multcompare.multout_PainPre];
+
+% file_id0 = fopen([rootpath 'Pain_3Gps_Pre_overallANOVA', whenRun,'.txt'], 'w');
+% fprintf(file_id0, Pain.Pre.n1_3Gp_AvgPain.overallResults,'');
+% fclose(file_id0) ;
+
+Pain.Pre.n1_3Gp_AvgPain.overallResults = ...
+     [Pain.Pre.n1_3Gp_AvgPain.overallFtest, ...
+     Pain.Pre.n1_3Gp_AvgPain.multcompare.multoutTbl_PainPre];
+
+     % Pain.Pre.n1_3Gp_AvgPain.multcompare.multoutTbl_PainPre.Properties.VariableNames; ...
+     % Pain.Pre.n1_3Gp_AvgPain.multcompare.multout_PainPre];
+
+
+%              MODIFYING THE multoutTbl_PainPre TO INCLUDE THE OVERALL P-VALUE
+Pain.Pre.n1_3Gp_AvgPain.multcompare.multoutTbl_PainPre.gp1{4,1} = 'overall';
+Pain.Pre.n1_3Gp_AvgPain.multcompare.multoutTbl_PainPre.gp2{4,1} = 'p-value';
+Pain.Pre.n1_3Gp_AvgPain.multcompare.multoutTbl_PainPre.pval{4,1} = Pain.Pre.n1_3Gp_AvgPain.p_PainPre;
+Pain.Pre.n1_3Gp_AvgPain.multcompare.multoutTbl_PainPre = ...
+     circshift(Pain.Pre.n1_3Gp_AvgPain.multcompare.multoutTbl_PainPre, [1,0]);
 %
+
 %%
 %    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                   ANOVAS TESTING FOR A MAIN EFFECT OF GROUP ON ALL PAIN ROI PAIRS
-%                   FOR THE PRE CONDITION ONLY
+%                   USING ALL 3 GROUPS AND ONLY THE PRE MANIPULATION SCANS
 %                   FINISHED May 2, 2018; CODE BLOCK = LINES 196-273
 %    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %              DECLARE A STRUCT TO HOLD THE RESULTS
@@ -239,8 +269,8 @@ for i = 1:length(painvoi)
 end
 %              IDENTIFY THE ROI-TO-ROI PAIRS WITH SIGNIFICANT GROUP DIFFERENCES IN CROSS CORRECTIONS
 %              SIGNIFICANT PAIRS ARE IDENTIFIED USING THE P-VALUE SPECIFIED BELOW
-sigpval = 0.005;
-[I,J] = find(Pain.Pre.n2_Gp_RoiPairPain.anova_pvals < sigpval);
+sigpval = 0.001;
+[I,J] = find(Pain.Pre.n2_Gp_RoiPairPain.anova_pvals <= sigpval);
 [I J]          % THE SIGNIFICANT ROI PAIRS IS SENT TO THE SCREEN
 Pain.Pre.n2_Gp_sigRoiPairPain = [I,J];
 %
@@ -250,7 +280,7 @@ Pain.Pre.n2_Gp_RoiPairPain.n2_Gp_sigRoiPairPain = [];
 %              and you can use the "sprintf" command for syntax like tabs, line breaks
 %              ADD A HEADER TO EXPLAIN WHAT INFORMATION IS BEING STORED
 Pain.Pre.n2_Gp_RoiPairPain.n2_Gp_sigRoiPairPain = [Pain.Pre.n2_Gp_RoiPairPain.n2_Gp_sigRoiPairPain ...
-     'There are significant group difference in these ROI-to_ROI CCs:' sprintf('\t') sprintf('\n')];
+     'There are significant differences among the 3 groups in these ROI-to_ROI CCs:' sprintf('\t') sprintf('\n')];
 %              THIS LOOP WRITES OUT THE SIGNIFICANT ROI PAIRS IDENTIFIED ABOVE TO THE NEW VARIABLE
 for i=1:numel(I)
      pairNum = num2str(i);
@@ -267,8 +297,8 @@ end
 %              THIS PRINTS THE OUTPUT FROM THE LOOP ABOVE TO THE SCREEN
 Pain.Pre.n2_Gp_RoiPairPain.n2_Gp_sigRoiPairPain
 %              THIS CREATES A TEXT FILE WITH THE SAME OUTPUT AS ABOVE
-whenRun = datestr(now, 'yyyy-mm-dd_HHMM');
-file_id1 = fopen([rootpath 'Sig_Pain_Pre_RoiPairs', whenRun,'.txt'], 'w');
+% whenRun = datestr(now, 'yyyy-mm-dd_HHMM');
+file_id1 = fopen([rootpath 'Pain_3Gps_Pre_RoiPairs', whenRun,'.txt'], 'w');
 fprintf(file_id1, Pain.Pre.n2_Gp_RoiPairPain.n2_Gp_sigRoiPairPain,'');
 fclose(file_id1);
 %
@@ -388,12 +418,12 @@ figure;
 imagesc(Pain.Pre.n4_Gp_ttestRoiPairPain.ttest_tval);colorbar;colormap(parula);
 
 %              WRITE OUT THE SIGNIFICANT ROI-TO-ROI CORRELATION BETWEEN GROUPS
-whenRun = datestr(now, 'yyyy-mm-dd_HHMM');
 file_id2 = fopen([rootpath 'Sig_Pain_Pre_ROIttest', whenRun,'.txt'], 'w');
 fprintf(file_id2, Pain.Pre.n4_Gp_ttestRoiPairPain.ttest_results,'');
 fclose(file_id2);
 %
 %%
+%{
 %    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                   NOW THAT WE HAVE IDENTIFIED ROI-ROI CORRELATIONS THAT DIFFER BETWEEN GROUPS VIA T-TEST
 %                   WE WILL USE REGRESSION ANALYSES TO SEE WHICH, IF ANY, BEHAVIORAL VARIABLES SIGNIFICANLY
@@ -496,6 +526,7 @@ LM_PainPre.modelSummary = LM_PainPre.modelSummary(:, [8 3 2 1 4 5 6 7]);
 
 %
 %
+%}
 %}
 
 
