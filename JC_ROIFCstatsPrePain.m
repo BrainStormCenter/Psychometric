@@ -7,7 +7,7 @@
 %
 %		USAGE:			TESTING FUNCTIONAL CONNECTIVITY AMONG PAIN-RELATED ROIS PRE MOOD MANIPULATION
 %
-%         LATEST MODIFICATION:     2018_05_08
+%         LATEST MODIFICATION:     2018_06_18
 %
 %         AS OF May 4, 2018, THERE ARE ISSUES WITH THE PSQI DATA
 %              SUB 161 = WASO SCORE OF -30
@@ -197,6 +197,7 @@ Pain.Pre.n1_3Gp_AvgPain.overallResults = [Pain.Pre.n1_3Gp_AvgPain.overallResults
 Pain.Pre.n1_3Gp_AvgPain.overallResults = [Pain.Pre.n1_3Gp_AvgPain.overallResults;...
      Pain.Pre.n1_3Gp_AvgPain.multcompare.multout_PainPre];
 
+
 % file_id0 = fopen([rootpath 'Pain_3Gps_Pre_overallANOVA', whenRun,'.txt'], 'w');
 % fprintf(file_id0, Pain.Pre.n1_3Gp_AvgPain.overallResults,'');
 % fclose(file_id0) ;
@@ -216,6 +217,8 @@ Pain.Pre.n1_3Gp_AvgPain.multcompare.multoutTbl_PainPre.pval{4,1} = Pain.Pre.n1_3
 Pain.Pre.n1_3Gp_AvgPain.multcompare.multoutTbl_PainPre = ...
      circshift(Pain.Pre.n1_3Gp_AvgPain.multcompare.multoutTbl_PainPre, [1,0]);
 %
+%              WRITE OUT THE TABLE FOR THE FIRST OVERALL TEST
+writetable(Pain.Pre.n1_3Gp_AvgPain.overallResults,['Pain_3Gps_overallAnova_' whenRun, '.csv'])
 
 %%
 %    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -269,7 +272,7 @@ for i = 1:length(painvoi)
 end
 %              IDENTIFY THE ROI-TO-ROI PAIRS WITH SIGNIFICANT GROUP DIFFERENCES IN CROSS CORRECTIONS
 %              SIGNIFICANT PAIRS ARE IDENTIFIED USING THE P-VALUE SPECIFIED BELOW
-sigpval = 0.001;
+sigpval = 0.002;         % BONFERRONI CORRECTION (pval/regions: 0.05/24=0.002)
 [I,J] = find(Pain.Pre.n2_Gp_RoiPairPain.anova_pvals <= sigpval);
 [I J]          % THE SIGNIFICANT ROI PAIRS IS SENT TO THE SCREEN
 Pain.Pre.n2_Gp_sigRoiPairPain = [I,J];
@@ -280,7 +283,9 @@ Pain.Pre.n2_Gp_RoiPairPain.n2_Gp_sigRoiPairPain = [];
 %              and you can use the "sprintf" command for syntax like tabs, line breaks
 %              ADD A HEADER TO EXPLAIN WHAT INFORMATION IS BEING STORED
 Pain.Pre.n2_Gp_RoiPairPain.n2_Gp_sigRoiPairPain = [Pain.Pre.n2_Gp_RoiPairPain.n2_Gp_sigRoiPairPain ...
-     'There are significant differences among the 3 groups in these ROI-to_ROI CCs:' sprintf('\t') sprintf('\n')];
+     'There are significant differences among the 3 groups in these ROI-to_ROI CCs:' sprintf('\t') sprintf('\n') ...
+     'The significance was based on a Bonferroni correction (pval/regions: 0.05/24=0.002):' ...
+     sprintf('\t') sprintf('\n')];
 %              THIS LOOP WRITES OUT THE SIGNIFICANT ROI PAIRS IDENTIFIED ABOVE TO THE NEW VARIABLE
 for i=1:numel(I)
      pairNum = num2str(i);
@@ -290,7 +295,8 @@ for i=1:numel(I)
      roi2str = painnames3(J(i),:);
      this_pval1 = Pain.Pre.n2_Gp_RoiPairPain.anova_pvals(I(i),J(i));
      this_fval1 = Pain.Pre.n2_Gp_RoiPairPain.anova_fvals(I(i),J(i));
-     Pain.Pre.n2_Gp_RoiPairPain.n2_Gp_sigRoiPairPain = [Pain.Pre.n2_Gp_RoiPairPain.n2_Gp_sigRoiPairPain pairNum, '. ' roi1str 'with ' roi2str ...
+     Pain.Pre.n2_Gp_RoiPairPain.n2_Gp_sigRoiPairPain = [Pain.Pre.n2_Gp_RoiPairPain.n2_Gp_sigRoiPairPain pairNum, ...
+     '. ' roi1str 'with ' roi2str ...
           sprintf('\t') '(#' roi1num ') <-->' ' (#' roi2num ')  ' sprintf('\t') ...
           'f-val: ' num2str(this_fval1) sprintf('\t') 'p-val: ' sprintf('%0.04f',this_pval1) sprintf('\n')];
 end
@@ -386,8 +392,8 @@ for i = 1:24
 end
 %              THESE IDENTIFY GROUP DIFFERENCES IN ROI-TO-ROI FUNCTIONAL CONNECTIVITY
 %              FDR CORRECTION
-pid = FDR(Pain.Pre.n4_Gp_ttestRoiPairPain.ttest_pval,.05);
-[I,J] = find(Pain.Pre.n4_Gp_ttestRoiPairPain.ttest_pval <= pid);
+pid = FDR(Pain.Pre.n4_Gp_ttestRoiPairPain.ttest_pval,.05);  % (THIS RESULTS IN A PVAL OF 0.018 FOR THIS SET OF VALUES)
+[I,J] = find(Pain.Pre.n4_Gp_ttestRoiPairPain.ttest_pval <= sigpval);  % USING BONFERRONI CORRECTION
 [I J]
 Pain.Pre.n4_Gp_sigRoiPairPain = [I,J];
 %%             FANCY CODE TO PRINT-OUT RESULTS
@@ -395,8 +401,10 @@ Pain.Pre.n4_Gp_sigRoiPairPain = [I,J];
 Pain.Pre.n4_Gp_ttestRoiPairPain.ttest_results = [];
 %              NOW, ADD STRINGS TO THAT ARRAY
 %              AND YOU CAN USE THE "SPRINTF" COMMAND FOR SYNTAX LIKE TABS, LINE BREAKS
-Pain.Pre.n4_Gp_ttestRoiPairPain.ttest_results = [Pain.Pre.n4_Gp_ttestRoiPairPain.ttest_results 'Significant t-test of pain ROIs, pre mood change, ' ...
-     'in the CCs of these ROI-pairs:' sprintf('\t') sprintf('\n')];
+Pain.Pre.n4_Gp_ttestRoiPairPain.ttest_results = [Pain.Pre.n4_Gp_ttestRoiPairPain.ttest_results ...
+     'Significant t-test of pain ROIs, pre mood change, in the CCs of these ROI-pairs:' sprintf('\t') sprintf('\n') ...
+     'The significance was based on a Bonferroni correction (pval/regions: 0.05/24=0.002):' ...
+     sprintf('\t') sprintf('\n')];
 %              THIS LOOP WRITES OUT THE SIGNIFICANT ROI PAIRS IDENTIFIED BY THE T-TEST ABOVE
 for i=1:numel(I)
      pairNum = num2str(i);
