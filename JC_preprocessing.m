@@ -8,6 +8,7 @@
 %       MODIFIED ON:    2017_09_20
 %       MODIFIED ON:	  2017_12_06
 %   	MODIFIED ON:	  2018_01_09  (ADDED INFO ABOUT SLICE TIMING)
+%      LATEST MODIFICATION:     2019_04_17 (making sure it still works)
 %
 %       USAGE:          PREPROCESS JASON'S R01 DATA
 %       MODIFIED TO:    JASON IS PREPROCESSING ADDITIONAL SUBJECTS
@@ -33,7 +34,8 @@ clear matlabbatch;
 %rootpath = '/cluster/folder/craggs/study/preprocessed/';
 %rootpath = '/Volumes/Data/Imaging/R01/preprocessed/';
 %rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason/';
-rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/';
+%rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason_0/';
+rootpath = '/Volumes/Data/Imaging/R01/preprocessed/_Jason_step1/';
 subpattern = 'Sub*_v*';
 anatpattern = 'T1_*.nii';
 funcpattern = 'RSrun*.nii';
@@ -145,7 +147,7 @@ for sc = 1:numel(subjlist)
     fprintf('Coregistering (roughly) s%s in %s to T1 template...\n', anatfile.name, subjlist{sc});
     spm_jobman('run', matlabbatch);
     clear matlabbatch;
-    delete(sanat);
+    %delete(sanat);
 
     % segment the structural
     DefField = [primary_path 'y_' anatfile.name];
