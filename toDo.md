@@ -1,4 +1,10 @@
 # To do list for the Psychometric grant
+
+April 25, 2019
+* Check on all processing steps
+* Process all new data
+
+
 May 6, 2018
 * There is an issue with the means of the post hoc models. The mean for each group should remain constant, but that does not seem to be the case. Find out why.
 
